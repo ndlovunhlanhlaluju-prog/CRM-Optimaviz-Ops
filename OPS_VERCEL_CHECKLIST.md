@@ -47,20 +47,22 @@ Update / keep these (Dashboard → Environment):
 | `SUPABASE_TABLE` | `crm_data` |
 | `SUPABASE_RECORD_ID` | `main` |
 | `SUPABASE_STORAGE_BUCKET` | `saas-social-media` |
-| `PLATFORM_OWNER_EMAILS` | `mthokozisigatsheni89@gmail.com` |
-| `PLATFORM_OWNER_BOOTSTRAP_PASSWORD` | *(set a known password you will use to log in)* |
+| `PLATFORM_OWNER_EMAILS` | `superadmin@optimaviz.com` |
+| `PLATFORM_OWNER_BOOTSTRAP_PASSWORD` | *(set a known password you will use to log in; default seed is `admin1234!`)* |
 | `BOOTSTRAP_PASSWORD_FORCE` | `true` **once**, then remove after first successful login |
 
 Also keep Meta / LinkedIn / WhatsApp / Stripe / Resend / Gmail secrets on **SaaS only**.
 
 ### Login recovery (important)
 
-If SaaS returns *Invalid credentials* for the platform owner:
+If SaaS returns *Invalid credentials* for the platform superadmin (`superadmin@optimaviz.com`):
 
 1. Set `PLATFORM_OWNER_BOOTSTRAP_PASSWORD` to the password you want (e.g. a strong secret).
 2. Optionally set `BOOTSTRAP_PASSWORD_FORCE=true` for one deploy so the stored hash is reset.
-3. Redeploy SaaS, log in once with that password.
+3. Redeploy SaaS, log in once as `superadmin@optimaviz.com` with that password.
 4. Remove `BOOTSTRAP_PASSWORD_FORCE` (leave bootstrap password only if you want a recovery key).
+
+Legacy personal owner emails (e.g. old Gmail owner accounts) are blocked and no longer elevated.
 
 ---
 
@@ -76,7 +78,7 @@ If SaaS returns *Invalid credentials* for the platform owner:
 
 1. Open `https://crm-optima-updated.vercel.app`
 2. DevTools → Network → login request host must be **`crm-optima-saas.onrender.com`** (or same-origin `/api` proxied to SaaS).
-3. Sign in as platform owner with the SaaS bootstrap / owner password.
+3. Sign in as platform superadmin (`superadmin@optimaviz.com`) with the SaaS bootstrap password.
 4. Internal brands + leads load from SaaS Supabase (`workspace-optima-internal`).
 
 ---
@@ -96,7 +98,7 @@ PUBLIC_CRM_URL=https://crm-optima-updated.vercel.app
 CORS_ORIGINS=https://crm-optima-updated.vercel.app
 PUBLIC_CRM_URL=https://crm-optima-saas.onrender.com
 APP_PUBLIC_URL=https://crm-optima-saas.onrender.com
-PLATFORM_OWNER_EMAILS=mthokozisigatsheni89@gmail.com
+PLATFORM_OWNER_EMAILS=superadmin@optimaviz.com
 PLATFORM_OWNER_BOOTSTRAP_PASSWORD=replace-with-your-login-password
 # BOOTSTRAP_PASSWORD_FORCE=true
 ```

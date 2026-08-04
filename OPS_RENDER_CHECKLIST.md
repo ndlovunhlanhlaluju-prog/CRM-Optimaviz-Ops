@@ -12,8 +12,8 @@
 | `SUPABASE_TABLE` | `crm_data` |
 | `SUPABASE_RECORD_ID` | `main` |
 | `SUPABASE_STORAGE_BUCKET` | `saas-social-media` |
-| `PLATFORM_OWNER_EMAILS` | `mthokozisigatsheni89@gmail.com` |
-| `PLATFORM_OWNER_BOOTSTRAP_PASSWORD` | *(known recovery password)* |
+| `PLATFORM_OWNER_EMAILS` | `superadmin@optimaviz.com` |
+| `PLATFORM_OWNER_BOOTSTRAP_PASSWORD` | *(known recovery password; default seed `admin1234!`)* |
 | Meta / LinkedIn / WhatsApp / Stripe / Resend | present |
 
 Redeploy SaaS after env changes.
@@ -42,6 +42,6 @@ Expect SaaS cloud ≈ 128 leads (or more) under internal workspace.
 ## 4. Smoke test
 
 1. Ops URL → Network → `/api/auth/login` host is **saas**
-2. Login as platform owner / internal admin
+2. Login as platform superadmin (`superadmin@optimaviz.com`) / internal admin
 3. Brands + leads visible
 4. SaaS customer signup still creates a separate workspace

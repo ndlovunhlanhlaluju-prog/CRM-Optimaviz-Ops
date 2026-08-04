@@ -1399,7 +1399,7 @@ export function registerSocialHubRoutes(app: express.Express, ctx: SocialHubRout
 
   app.post('/api/social/posts/publish', ctx.requireAuth, async (req, res) => {
     try {
-      const isAdmin = req.user?.role === 'admin' || (req.user as any)?.platform_role === 'owner';
+      const isAdmin = req.user?.role === 'admin' || ['superadmin', 'owner'].includes(String((req.user as any)?.platform_role || ''));
       // Non-admins cannot go live directly — they submit for approval (Phase 2).
       if (!isAdmin) {
         const post = createPostFromBody(ctx, req, 'pending_approval');

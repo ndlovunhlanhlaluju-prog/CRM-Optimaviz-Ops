@@ -16,6 +16,8 @@ interface UsersPageProps {
   handleSelectDashboard: () => void;
   setAddUserIsOpen: (v: boolean) => void;
   usersList: User[];
+  /** Current signed-in user — used to gate admin create/delete to superadmin. */
+  currentUser?: User | null;
   selectedUserManagementId: string;
   setSelectedUserManagementId: (id: string) => void;
   activeBrands: Brand[];
@@ -107,6 +109,7 @@ export default function UsersPage({
   handleSelectDashboard,
   setAddUserIsOpen,
   usersList,
+  currentUser,
   selectedUserManagementId,
   setSelectedUserManagementId,
   activeBrands,
@@ -200,6 +203,13 @@ export default function UsersPage({
   const adminCount = usersList.filter(u => u.role === 'admin').length;
   const staffCount = usersList.filter(u => u.role !== 'admin').length;
   const activeCount = usersList.filter(u => u.presence_status && u.presence_status !== 'offline').length;
+  const isSuperAdmin = ['superadmin', 'owner'].includes(String(currentUser?.platform_role || '').toLowerCase())
+    || String(currentUser?.email || '').toLowerCase() === 'superadmin@optimaviz.com';
+  const canManageSelectedAdmin = Boolean(selectedStaff)
+    && (selectedStaff!.role !== 'admin' || isSuperAdmin)
+    && selectedStaff!.id !== currentUser?.id;
+  const canResetSelectedPassword = Boolean(selectedStaff)
+    && (selectedStaff!.role !== 'admin' || isSuperAdmin || selectedStaff!.id === currentUser?.id);
 
   return (
     <div style={{ animation: 'fadeIn 0.3s' }}>
@@ -211,7 +221,11 @@ export default function UsersPage({
           </button>
           <div>
             <h3 style={{ fontSize: '16px', fontWeight: '700', margin: 0 }}>Staff users roster directory</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>Add security credentials or adjust executive permission definitions.</p>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+              {isSuperAdmin
+                ? 'Superadmin can add platform admins and staff, and manage all credentials.'
+                : 'Admins can add staff users. Only the superadmin can create or remove platform admins.'}
+            </p>
           </div>
         </div>
         <button className="btn btn-primary" onClick={() => setAddUserIsOpen(true)}>
@@ -311,23 +325,35 @@ export default function UsersPage({
                 </div>
 
                 <div className="user-admin-actions">
-                  <button className="btn btn-ghost" onClick={() => {
-                    setPwdUser(selectedStaff);
-                    setNewPwdField('');
-                    setShowAdminPwd(false);
-                  }}>
-                    <i className="fas fa-key"></i> Reset password
-                  </button>
-                  {confirmDeleteUserId === selectedStaff.id ? (
-                    <>
-                      <button className="btn btn-sm" onClick={() => { handleDeleteUser(selectedStaff.id); setConfirmDeleteUserId(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none' }}>Confirm remove</button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDeleteUserId(null)}>Cancel</button>
-                    </>
-                  ) : (
-                    <button className="btn btn-ghost" onClick={() => setConfirmDeleteUserId(selectedStaff.id)} style={{ color: '#ef4444' }}>
-                      <i className="fas fa-trash"></i> Remove user
+                  {canResetSelectedPassword ? (
+                    <button className="btn btn-ghost" onClick={() => {
+                      setPwdUser(selectedStaff);
+                      setNewPwdField('');
+                      setShowAdminPwd(false);
+                    }}>
+                      <i className="fas fa-key"></i> Reset password
                     </button>
+                  ) : (
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      Only superadmin can reset platform admin passwords.
+                    </span>
                   )}
+                  {canManageSelectedAdmin ? (
+                    confirmDeleteUserId === selectedStaff.id ? (
+                      <>
+                        <button className="btn btn-sm" onClick={() => { handleDeleteUser(selectedStaff.id); setConfirmDeleteUserId(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none' }}>Confirm remove</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDeleteUserId(null)}>Cancel</button>
+                      </>
+                    ) : (
+                      <button className="btn btn-ghost" onClick={() => setConfirmDeleteUserId(selectedStaff.id)} style={{ color: '#ef4444' }}>
+                        <i className="fas fa-trash"></i> Remove user
+                      </button>
+                    )
+                  ) : selectedStaff.id === currentUser?.id ? (
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>You cannot remove your own account.</span>
+                  ) : selectedStaff.role === 'admin' && !isSuperAdmin ? (
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Only superadmin can remove platform admins.</span>
+                  ) : null}
                 </div>
               </>
             ) : (

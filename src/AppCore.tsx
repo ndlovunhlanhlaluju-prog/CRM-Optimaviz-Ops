@@ -8480,9 +8480,16 @@ export default function App() {
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userForm.name || !userForm.email || !userForm.password || !userForm.role) return;
+    const isSuperAdmin = ['superadmin', 'owner'].includes(String(user?.platform_role || '').toLowerCase())
+      || String(user?.email || '').toLowerCase() === 'superadmin@optimaviz.com';
+    // Non-superadmins may only create staff; server also enforces this.
+    const payload = {
+      ...userForm,
+      role: isSuperAdmin ? userForm.role : 'user',
+    };
     setUserSaving(true);
     try {
-      await axios.post('/api/auth/users', userForm);
+      await axios.post('/api/auth/users', payload);
       setUserForm({ name: '', email: '', password: '', role: 'user', allowed_brand_ids: [] });
       setAddUserIsOpen(false);
       fetchUsersList();
@@ -12353,6 +12360,7 @@ export default function App() {
               handleSelectDashboard={handleSelectDashboard}
               setAddUserIsOpen={setAddUserIsOpen}
               usersList={usersList}
+              currentUser={user}
               selectedUserManagementId={selectedUserManagementId}
               setSelectedUserManagementId={setSelectedUserManagementId}
               activeBrands={activeBrands}
@@ -14888,10 +14896,29 @@ export default function App() {
                  </div>
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Role Clearance</label>
-                  <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px', background: 'var(--bg-card)' }}>
-                    <option value="user">Standard Agent</option>
-                    <option value="admin">Platform Admin</option>
-                  </select>
+                  {(() => {
+                    const isSuperAdmin = ['superadmin', 'owner'].includes(String(user?.platform_role || '').toLowerCase())
+                      || String(user?.email || '').toLowerCase() === 'superadmin@optimaviz.com';
+                    const roleValue = isSuperAdmin ? userForm.role : 'user';
+                    return (
+                      <>
+                        <select
+                          value={roleValue}
+                          onChange={e => setUserForm({ ...userForm, role: e.target.value })}
+                          disabled={!isSuperAdmin}
+                          style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '12px', background: 'var(--bg-card)', opacity: isSuperAdmin ? 1 : 0.85 }}
+                        >
+                          <option value="user">Standard Agent</option>
+                          {isSuperAdmin && <option value="admin">Platform Admin</option>}
+                        </select>
+                        {!isSuperAdmin && (
+                          <p style={{ margin: '6px 0 0', color: 'var(--text-muted)', fontSize: '11px', lineHeight: 1.4 }}>
+                            Only the platform superadmin can create platform admins. You can add staff (standard agents).
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}>Brand access</label>

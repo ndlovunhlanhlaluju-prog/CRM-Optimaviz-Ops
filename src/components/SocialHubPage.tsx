@@ -231,7 +231,7 @@ export default function SocialHubPage({ user, brands, showToast }: Props) {
     scheduled_for: '',
   });
 
-  const isAdmin = user?.role === 'admin' || user?.platform_role === 'owner';
+  const isAdmin = user?.role === 'admin' || user?.platform_role === 'superadmin' || user?.platform_role === 'owner';
   const providerSettings = settings?.providers || {
     meta: { configured: false, redirect_uri: '', scopes: [] },
     linkedin: { configured: false, redirect_uri: '', scopes: [] },

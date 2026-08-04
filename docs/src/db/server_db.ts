@@ -423,11 +423,12 @@ export class LocalDb {
 
   private getSeededData(): Schema {
     const adminUser: DbUser = {
-      id: 'admin-1',
-      name: 'Mthokozisi Gatsheni',
-      email: 'mthokozisigatsheni89@gmail.com',
+      id: 'superadmin-1',
+      name: 'Optimaviz Superadmin',
+      email: 'superadmin@optimaviz.com',
       password: '***REMOVED***',
       role: 'admin',
+      platform_role: 'superadmin' as any,
       created_at: new Date().toISOString()
     };
 

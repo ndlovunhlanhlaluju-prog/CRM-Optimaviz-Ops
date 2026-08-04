@@ -2577,9 +2577,18 @@ async function startServer() {
     next();
   };
 
+  // Platform superadmin (overall owner): can create/delete admins. Not a normal staff/admin account.
+  const DEFAULT_SUPERADMIN_EMAIL = 'superadmin@optimaviz.com';
+  const DEFAULT_SUPERADMIN_PASSWORD = 'admin1234!';
+  /** Former personal owner emails — blocked from login and stripped of elevated role. */
+  const LEGACY_OWNER_EMAILS = new Set([
+    'mthokozisigatsheni89@gmail.com',
+    'mthokozisigatsheni89@gamil.com', // common typo from earlier setup
+  ]);
+
   const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const user = getSessionUser(req);
-    if (!user || (user.role !== 'admin' && user.platform_role !== 'owner' && !protectedOwnerEmails.has(String(user.email || '').toLowerCase()))) { res.status(403).json({ detail: 'Admin role required.' }); return; }
+    if (!user || !isAdminUser(user)) { res.status(403).json({ detail: 'Admin role required.' }); return; }
     req.user = user;
     next();
   };
@@ -2594,40 +2603,79 @@ async function startServer() {
   };
 
   const protectedOwnerEmails = new Set(
-    (process.env.PLATFORM_OWNER_EMAILS || 'mthokozisigatsheni89@gmail.com')
+    (process.env.PLATFORM_OWNER_EMAILS || DEFAULT_SUPERADMIN_EMAIL)
       .split(',')
       .map(email => sanitizeString(email, 254).toLowerCase())
-      .filter(Boolean)
+      .filter(email => Boolean(email) && !LEGACY_OWNER_EMAILS.has(email))
   );
-  const isProtectedOwnerUser = (user?: DbUser) => Boolean(user && (user.platform_role === 'owner' || protectedOwnerEmails.has(user.email.toLowerCase())));
-  const isAdminUser = (user?: DbUser | null) => Boolean(user && (user.role === 'admin' || user.platform_role === 'owner' || protectedOwnerEmails.has(String(user.email || '').toLowerCase())));
+  // Always ensure the default Optimaviz superadmin email is protected.
+  protectedOwnerEmails.add(DEFAULT_SUPERADMIN_EMAIL);
+
+  const SUPERADMIN_ROLES = new Set(['superadmin', 'owner']); // 'owner' kept for backward-compat data
+  const isProtectedOwnerUser = (user?: DbUser | null) => Boolean(
+    user
+    && (
+      SUPERADMIN_ROLES.has(String(user.platform_role || ''))
+      || protectedOwnerEmails.has(String(user.email || '').toLowerCase())
+    )
+    && !LEGACY_OWNER_EMAILS.has(String(user.email || '').toLowerCase())
+  );
+  const isAdminUser = (user?: DbUser | null) => Boolean(
+    user && (
+      user.role === 'admin'
+      || SUPERADMIN_ROLES.has(String(user.platform_role || ''))
+      || protectedOwnerEmails.has(String(user.email || '').toLowerCase())
+    )
+  );
 
   const ensureProtectedOwnerAccounts = () => {
     let dirty = false;
-    const bootstrapPassword = sanitizeString(process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || '', 200);
+    const bootstrapPassword = sanitizeString(
+      process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || DEFAULT_SUPERADMIN_PASSWORD,
+      200,
+    );
     const forceBootstrap = ['1', 'true', 'yes'].includes(String(process.env.BOOTSTRAP_PASSWORD_FORCE || '').toLowerCase());
     const isBroken = (stored?: string) => {
       const value = String(stored || '');
       return !value || value.startsWith('set-') || !value.startsWith(PASSWORD_HASH_PREFIX);
     };
+
+    // Remove / demote legacy personal owner accounts (no longer platform superadmin).
+    // Login is blocked for these emails; strip elevated role once and invalidate any open session.
+    db.get().users.forEach(u => {
+      const email = String(u.email || '').toLowerCase().trim();
+      if (!LEGACY_OWNER_EMAILS.has(email)) return;
+      let changed = false;
+      if (SUPERADMIN_ROLES.has(String(u.platform_role || '')) || u.platform_role === 'owner' || u.platform_role === 'superadmin') {
+        u.platform_role = 'none';
+        changed = true;
+      }
+      if (u.session_token || u.session_expires_at) {
+        clearSession(u);
+        changed = true;
+      }
+      if (changed) dirty = true;
+    });
+
     protectedOwnerEmails.forEach(email => {
+      if (LEGACY_OWNER_EMAILS.has(email)) return;
       let owner = db.get().users.find(user => String(user.email || '').toLowerCase() === email);
-      const recoverySecret = bootstrapPassword || 'password123';
+      const recoverySecret = bootstrapPassword || DEFAULT_SUPERADMIN_PASSWORD;
       if (!owner) {
         owner = {
-          id: newId('owner'),
-          name: email === 'mthokozisigatsheni89@gmail.com' ? 'Mthokozisi Gatsheni' : 'Platform Owner',
+          id: newId('superadmin'),
+          name: email === DEFAULT_SUPERADMIN_EMAIL ? 'Optimaviz Superadmin' : 'Platform Superadmin',
           email,
           password: hashPassword(recoverySecret),
           role: 'admin',
-          platform_role: 'owner',
+          platform_role: 'superadmin',
           created_at: new Date().toISOString(),
         };
         db.get().users.push(owner);
         dirty = true;
       }
       if (owner.role !== 'admin') { owner.role = 'admin'; dirty = true; }
-      if (owner.platform_role !== 'owner') { owner.platform_role = 'owner'; dirty = true; }
+      if (owner.platform_role !== 'superadmin') { owner.platform_role = 'superadmin'; dirty = true; }
       // Heal only missing/broken passwords (or explicit force). Never wipe a working custom password every boot.
       if (forceBootstrap && bootstrapPassword) {
         if (!verifyPassword(bootstrapPassword, owner.password || '')) {
@@ -2644,31 +2692,43 @@ async function startServer() {
 
   const verifyLoginPassword = (user: DbUser | undefined, password: string) => {
     if (!user) return false;
+    const email = String(user.email || '').toLowerCase().trim();
+    if (LEGACY_OWNER_EMAILS.has(email)) return false;
+
     const attempt = String(password || '');
     if (!attempt) return false;
     if (verifyPassword(attempt, user.password || '')) return true;
 
     const stored = String(user.password || '');
-    // Legacy plaintext â†’ upgrade for any user
+    // Legacy plaintext → upgrade for any user
     if (stored && !stored.startsWith(PASSWORD_HASH_PREFIX) && stored === attempt) {
       user.password = hashPassword(attempt);
       db.save();
       return true;
     }
 
-    const email = String(user.email || '').toLowerCase().trim();
-    const bootstrapPassword = sanitizeString(process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || '', 200);
-    // Owner bootstrap env is always a recovery master key
+    const bootstrapPassword = sanitizeString(
+      process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || DEFAULT_SUPERADMIN_PASSWORD,
+      200,
+    );
+    // Superadmin bootstrap env is always a recovery master key
     if (isProtectedOwnerUser(user) && bootstrapPassword && attempt === bootstrapPassword) {
       user.password = hashPassword(attempt);
       db.save();
       return true;
     }
 
-    // Broken / seed-placeholder passwords on built-in accounts â†’ accept recovery defaults
+    // Broken / seed-placeholder passwords on built-in accounts → accept recovery defaults
     const broken = !stored || stored.startsWith('set-') || !stored.startsWith(PASSWORD_HASH_PREFIX);
-    const defaultEmails = new Set(['mthokozisigatsheni89@gmail.com', 'admin@optimacrm.com', 'admin@dirotiq.com', 'agent@dirotiq.com', ...protectedOwnerEmails]);
-    if (broken && defaultEmails.has(email) && ['password123', 'admin123', 'password'].includes(attempt)) {
+    const defaultEmails = new Set([
+      DEFAULT_SUPERADMIN_EMAIL,
+      'admin@optimacrm.com',
+      'admin@dirotiq.com',
+      'agent@dirotiq.com',
+      ...protectedOwnerEmails,
+    ]);
+    const defaultPasswords = [DEFAULT_SUPERADMIN_PASSWORD, 'password123', 'admin123', 'password'];
+    if (broken && defaultEmails.has(email) && defaultPasswords.includes(attempt)) {
       user.password = hashPassword(attempt);
       db.save();
       return true;
@@ -3205,16 +3265,25 @@ async function startServer() {
     const { email, password } = req.body;
     if (!email || !password) { res.status(400).json({ detail: 'Email and password are required' }); return; }
     const normalizedEmail = String(email).toLowerCase().trim();
+    if (LEGACY_OWNER_EMAILS.has(normalizedEmail)) {
+      res.status(401).json({ detail: 'Invalid credentials' });
+      return;
+    }
     let user = db.get().users.find(u => String(u.email || '').toLowerCase() === normalizedEmail);
-    // Recreate missing platform owner after wipe (parity with SaaS recovery).
-    if (!user && protectedOwnerEmails.has(normalizedEmail) && ['password123', 'admin123', sanitizeString(process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || '', 200)].filter(Boolean).includes(String(password))) {
+    // Recreate missing superadmin after wipe (parity with SaaS recovery).
+    const bootstrapPassword = sanitizeString(
+      process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || DEFAULT_SUPERADMIN_PASSWORD,
+      200,
+    );
+    const recoveryPasswords = [bootstrapPassword, DEFAULT_SUPERADMIN_PASSWORD, 'password123', 'admin123'].filter(Boolean);
+    if (!user && protectedOwnerEmails.has(normalizedEmail) && recoveryPasswords.includes(String(password))) {
       user = {
-        id: newId('owner'),
-        name: normalizedEmail === 'mthokozisigatsheni89@gmail.com' ? 'Mthokozisi Gatsheni' : 'Platform Owner',
+        id: newId('superadmin'),
+        name: normalizedEmail === DEFAULT_SUPERADMIN_EMAIL ? 'Optimaviz Superadmin' : 'Platform Superadmin',
         email: normalizedEmail,
         password: hashPassword(String(password)),
         role: 'admin',
-        platform_role: 'owner',
+        platform_role: 'superadmin',
         created_at: new Date().toISOString(),
       };
       db.get().users.push(user);
@@ -6524,7 +6593,20 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     const { name, email, password, role } = req.body;
     if (!name || !email || !password || !role) { res.status(400).json({ detail: 'Missing required user fields' }); return; }
     const normalizedEmail = sanitizeString(email, 254).toLowerCase();
-    if (protectedOwnerEmails.has(normalizedEmail)) { res.status(400).json({ detail: 'The platform owner account is managed separately.' }); return; }
+    if (LEGACY_OWNER_EMAILS.has(normalizedEmail)) {
+      res.status(400).json({ detail: 'This email is reserved and cannot be registered.' });
+      return;
+    }
+    if (protectedOwnerEmails.has(normalizedEmail) || normalizedEmail === DEFAULT_SUPERADMIN_EMAIL) {
+      res.status(400).json({ detail: 'The platform superadmin account is managed separately.' });
+      return;
+    }
+    const wantsAdmin = role === 'admin';
+    // Only the platform superadmin can create other platform admins.
+    if (wantsAdmin && !isProtectedOwnerUser(req.user)) {
+      res.status(403).json({ detail: 'Only the superadmin can add platform admins.' });
+      return;
+    }
     const duplicate = db.get().users.some(u => u.email.toLowerCase() === email.toLowerCase());
     if (duplicate) { res.status(400).json({ detail: 'User email already registered.' }); return; }
     const newUser: DbUser = {
@@ -6532,8 +6614,8 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       name: sanitizeString(name, 120),
       email: normalizedEmail,
       password: hashPassword(String(password)),
-      role: role === 'admin' ? 'admin' : 'user',
-      allowed_brand_ids: role === 'admin' ? [] : cleanAllowedBrandIds(req.body?.allowed_brand_ids),
+      role: wantsAdmin ? 'admin' : 'user',
+      allowed_brand_ids: wantsAdmin ? [] : cleanAllowedBrandIds(req.body?.allowed_brand_ids),
       platform_role: 'none',
       created_at: new Date().toISOString(),
     };
@@ -6548,19 +6630,37 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     const idx = db.get().users.findIndex(u => u.id === user_id);
     if (idx === -1) { res.status(404).json({ detail: 'User not found' }); return; }
     if (isProtectedOwnerUser(db.get().users[idx]) && req.user!.id !== user_id) { res.status(404).json({ detail: 'User not found' }); return; }
-    if (req.user!.id !== user_id && req.user!.role !== 'admin') { res.status(403).json({ detail: 'You can only update your own profile.' }); return; }
+    if (req.user!.id !== user_id && !isAdminUser(req.user)) { res.status(403).json({ detail: 'You can only update your own profile.' }); return; }
     const orig = db.get().users[idx];
     const { name, email, role, allowed_brand_ids, profile_picture_url } = req.body;
     const isSelf = req.user!.id === user_id;
-    const nextRole = isSelf ? orig.role : (role !== undefined ? (role === 'admin' ? 'admin' : 'user') : orig.role);
+    let nextRole: 'admin' | 'user' = orig.role;
+    if (!isSelf && role !== undefined) {
+      const desiredAdmin = role === 'admin';
+      // Promoting to / demoting from admin requires superadmin.
+      if (desiredAdmin !== (orig.role === 'admin') && !isProtectedOwnerUser(req.user)) {
+        res.status(403).json({ detail: 'Only the superadmin can change platform admin roles.' });
+        return;
+      }
+      nextRole = desiredAdmin ? 'admin' : 'user';
+    }
+    const nextEmail = isSelf ? orig.email : (email !== undefined ? sanitizeString(email, 254).toLowerCase() : orig.email);
+    if (LEGACY_OWNER_EMAILS.has(String(nextEmail || '').toLowerCase()) || protectedOwnerEmails.has(String(nextEmail || '').toLowerCase())) {
+      if (String(nextEmail || '').toLowerCase() !== String(orig.email || '').toLowerCase()) {
+        res.status(400).json({ detail: 'This email is reserved.' });
+        return;
+      }
+    }
     db.get().users[idx] = {
       ...orig,
       name:  name  !== undefined ? sanitizeString(name, 120)             : orig.name,
       profile_picture_url: profile_picture_url !== undefined
         ? sanitizeString(profile_picture_url, 400_000)
         : orig.profile_picture_url,
-      email: isSelf ? orig.email : (email !== undefined ? sanitizeString(email, 254).toLowerCase() : orig.email),
+      email: nextEmail,
       role:  nextRole,
+      // platform_role is managed only by ensureProtectedOwnerAccounts / bootstrap — never via API.
+      platform_role: orig.platform_role,
       allowed_brand_ids: isSelf || nextRole === 'admin'
         ? orig.allowed_brand_ids
         : (allowed_brand_ids !== undefined ? cleanAllowedBrandIds(allowed_brand_ids) : orig.allowed_brand_ids),
@@ -6588,8 +6688,13 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
   app.delete('/api/auth/users/:user_id', requireAdmin, (req, res) => {
     const { user_id } = req.params;
     const target = db.get().users.find(u => u.id === user_id);
-    if (isProtectedOwnerUser(target)) { res.status(404).json({ detail: 'User not found' }); return; }
+    if (!target || isProtectedOwnerUser(target)) { res.status(404).json({ detail: 'User not found' }); return; }
     if (req.user!.id === user_id) { res.status(400).json({ detail: 'You cannot delete your own account.' }); return; }
+    // Only superadmin may delete platform admins; regular admins may delete staff only.
+    if (target.role === 'admin' && !isProtectedOwnerUser(req.user)) {
+      res.status(403).json({ detail: 'Only the superadmin can delete platform admins.' });
+      return;
+    }
     db.get().users = db.get().users.filter(u => u.id !== user_id);
     auditSecurityEvent(req, 'user_delete', { target_user_id: user_id });
     db.save();
@@ -6603,6 +6708,11 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     const idx = db.get().users.findIndex(u => u.id === user_id);
     if (idx === -1) { res.status(404).json({ detail: 'User not found' }); return; }
     if (isProtectedOwnerUser(db.get().users[idx]) && req.user!.id !== user_id) { res.status(404).json({ detail: 'User not found' }); return; }
+    const target = db.get().users[idx];
+    if (target.role === 'admin' && !isProtectedOwnerUser(req.user) && req.user!.id !== user_id) {
+      res.status(403).json({ detail: 'Only the superadmin can reset platform admin passwords.' });
+      return;
+    }
     db.get().users[idx].password = hashPassword(String(password));
     clearSession(db.get().users[idx]);
     auditSecurityEvent(req, 'password_change_admin', { target_user_id: user_id });
