@@ -95,23 +95,25 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
               />
             </div>
 
-            <div style={{ marginBottom: '24px', position: 'relative' }}>
+            <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Password</label>
-              <input
-                type={showLoginPassword ? 'text' : 'password'}
-                value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
-                required
-                placeholder="Enter your security credentials"
-                style={{ width: '100%', padding: '12px 42px 12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowLoginPassword(!showLoginPassword)}
-                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(calc(-50% + 10px))', width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }}
-              >
-                <i className={showLoginPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
-              </button>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  required
+                  placeholder="Enter your security credentials"
+                  style={{ width: '100%', padding: '12px 42px 12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }}
+                >
+                  <i className={showLoginPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
+                </button>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
