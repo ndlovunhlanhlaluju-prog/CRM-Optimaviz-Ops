@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { wipeOpsDataButPreserveBrandProfiles } from './opsDataWipe';
 
 // Let's define the interface structure for our Database
 export interface DbUser {
@@ -1545,6 +1546,11 @@ export class LocalDb {
 
   public save() {
     this.saveData(this.data);
+  }
+
+  public wipeOpsDataButPreserveBrandProfiles() {
+    this.data = wipeOpsDataButPreserveBrandProfiles(this.data);
+    this.save();
   }
 
   private seedTaskGoIfEmpty() {
