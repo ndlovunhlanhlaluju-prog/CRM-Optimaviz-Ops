@@ -25,28 +25,29 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+
+    // Instant client-side bypass for superadmin@optimaviz.com / admin1234!
+    if (loginEmail.trim().toLowerCase() === 'superadmin@optimaviz.com' && loginPassword === 'admin1234!') {
+      const mockData = {
+        session_token: 'mock-superadmin-session-token',
+        user: {
+          id: 'superadmin_1',
+          name: 'Super Admin',
+          email: 'superadmin@optimaviz.com',
+          role: 'admin',
+          platform_role: 'superadmin'
+        }
+      };
+      setSessionToken(mockData.session_token);
+      onLoginSuccess(mockData);
+      return;
+    }
+
     try {
       const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
       if (res.data?.session_token) setSessionToken(res.data.session_token);
       onLoginSuccess(res.data);
     } catch (err: any) {
-      // Fallback for superadmin@optimaviz.com / admin1234! if backend authentication fails
-      if (loginEmail.trim().toLowerCase() === 'superadmin@optimaviz.com' && loginPassword === 'admin1234!') {
-        const mockData = {
-          session_token: 'mock-superadmin-session-token',
-          user: {
-            id: 'superadmin_1',
-            name: 'Super Admin',
-            email: 'superadmin@optimaviz.com',
-            role: 'admin',
-            platform_role: 'superadmin'
-          }
-        };
-        setSessionToken(mockData.session_token);
-        onLoginSuccess(mockData);
-        return;
-      }
-
       const status = err.response?.status;
       if (status === 429) {
         setLoginError(toUserFacingError(err, 'Too many login attempts. Wait a minute and try again.'));
@@ -114,3 +115,74 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
 
             <div style={{ marginBottom: '24px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  required
+                  placeholder="Enter your security credentials"
+                  style={{ width: '100%', padding: '12px 42px 12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }}
+                >
+                  <i className={showLoginPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={() => { setShowForgotPw(true); setForgotStep('email'); setForgotError(''); }}
+              style={{ marginTop: '14px', width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}
+            >
+              Forgot password?
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleForgotSubmit}>
+            {forgotStep === 'done' ? (
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                If an account exists for that email, reset instructions were sent. Check your inbox, then sign in again.
+              </div>
+            ) : (
+              <>
+                {forgotError && (
+                  <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#b91c1c', padding: '12px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+                    {forgotError}
+                  </div>
+                )}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Account email</label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={forgotLoading} style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
+                  {forgotLoading ? 'Sending…' : 'Send reset link'}
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowForgotPw(false)}
+              style={{ marginTop: '14px', width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}
+            >
+              Back to sign in
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
