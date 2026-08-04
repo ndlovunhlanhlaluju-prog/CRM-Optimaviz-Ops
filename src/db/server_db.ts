@@ -9,7 +9,7 @@ export interface DbUser {
   password?: string;
   role: 'admin' | 'user';
   allowed_brand_ids?: string[];
-  platform_role?: 'owner' | 'none';
+  platform_role?: 'superadmin' | 'owner' | 'none';
   session_token?: string;
   session_expires_at?: string;
   presence_status?: 'online' | 'away' | 'offline';
@@ -985,16 +985,17 @@ export class LocalDb {
     let userModified = false;
     this.data.users.forEach(u => {
       const email = String(u.email || '').toLowerCase().trim();
+      const platformRole = String(u.platform_role || '');
       const isBuiltin = [
-        'mthokozisigatsheni89@gmail.com',
+        'superadmin@optimaviz.com',
         'admin@optimacrm.com',
         'admin@dirotiq.com',
         'agent@dirotiq.com',
-      ].includes(email) || String(u.platform_role || '') === 'owner';
+      ].includes(email) || platformRole === 'superadmin' || platformRole === 'owner';
       if (isBuiltin && (!u.password || String(u.password).startsWith('set-'))) {
         u.password = process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD
           || process.env.ADMIN_BOOTSTRAP_PASSWORD
-          || 'password123';
+          || (email === 'superadmin@optimaviz.com' || platformRole === 'superadmin' ? 'admin1234!' : 'password123');
         userModified = true;
       }
     });
@@ -1035,21 +1036,22 @@ export class LocalDb {
 
   private getSeededData(): Schema {
     const adminUser: DbUser = {
-      id: 'admin-1',
-      name: 'Mthokozisi Gatsheni',
-      email: 'mthokozisigatsheni89@gmail.com',
-      password: process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || 'password123',
+      id: 'superadmin-1',
+      name: 'Optimaviz Superadmin',
+      email: 'superadmin@optimaviz.com',
+      password: process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || 'admin1234!',
       role: 'admin',
-      platform_role: 'owner',
+      platform_role: 'superadmin',
       created_at: new Date().toISOString()
     };
 
     const adminUser2: DbUser = {
       id: 'admin-2',
-      name: 'Platform Owner',
+      name: 'Platform Admin',
       email: 'admin@optimacrm.com',
       password: process.env.ADMIN_BOOTSTRAP_PASSWORD || 'password123',
       role: 'admin',
+      platform_role: 'none',
       created_at: new Date().toISOString()
     };
 
