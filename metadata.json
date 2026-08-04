@@ -1,0 +1,6 @@
+{
+  "name": "DirotiQ CRM",
+  "description": "Multi-brand, multi-regional operational intelligence portal featuring dynamic lead streams, sequence automation, consolidated CRM softphone dialing, interactive email tracking, and real-time team status coordinates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

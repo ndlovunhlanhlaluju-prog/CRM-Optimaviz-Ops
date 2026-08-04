@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DirotiQ CRM Team Call</title>
+    <style>
+      html, body, #team-call-root { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #111827; }
+      body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      #call-status { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; color: #fff; background: #111827; }
+      #call-status > div { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; background: rgba(31,41,55,.92); }
+      #call-status.error > div { max-width: 460px; color: #fecaca; }
+      .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="call-status"><div><span class="spinner"></span><strong>Moving your active meeting to this tab...</strong></div></div>
+    <div id="team-call-root"></div>
+    <script>
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const appId = (params.get('appId') || '').replace(/[^a-zA-Z0-9-]/g, '');
+        const room = (params.get('room') || '').replace(/[^a-zA-Z0-9-]/g, '');
+        const displayName = (params.get('name') || 'DirotiQ CRM user').slice(0, 120);
+        const title = (params.get('title') || 'Team meeting').slice(0, 120);
+        const status = document.getElementById('call-status');
+        const channel = 'BroadcastChannel' in window ? new BroadcastChannel('optima-team-call-transfer') : null;
+        let readyPosted = false;
+
+        const postReady = () => {
+          if (readyPosted) return;
+          readyPosted = true;
+          status.style.display = 'none';
+          channel?.postMessage({ type: 'team-call-tab-ready', room });
+        };
+
+        const fail = (message) => {
+          status.className = 'error';
+          status.innerHTML = `<div><strong>${message}</strong></div>`;
+        };
+
+        if (!appId || !room) {
+          fail('This meeting link is incomplete. Return to DirotiQ CRM and use Move to tab again.');
+          return;
+        }
+
+        document.title = `${title} | DirotiQ CRM`;
+        // Signal early so the CRM can free the main window while this tab finishes joining.
+        window.setTimeout(postReady, 1200);
+        const script = document.createElement('script');
+        script.src = `https://8x8.vc/${appId}/external_api.js`;
+        script.async = true;
+        script.onerror = () => fail('The meeting service could not load. Check your connection and try again.');
+        script.onload = () => {
+          try {
+            const api = new window.JitsiMeetExternalAPI('8x8.vc', {
+              roomName: `${appId}/${room}`,
+              parentNode: document.getElementById('team-call-root'),
+              width: '100%',
+              height: '100%',
+              userInfo: { displayName },
+              configOverwrite: {
+                disableDeepLinking: true,
+                prejoinConfig: { enabled: false },
+                startWithAudioMuted: false,
+                startWithVideoMuted: true,
+                subject: title,
+                brandingRoomAlias: title,
+                toolbarButtons: ['microphone', 'camera', 'desktop', 'chat', 'participants-pane', 'tileview', 'raisehand', 'select-background', 'settings', 'fullscreen', 'hangup']
+              },
+              interfaceConfigOverwrite: {
+                APP_NAME: 'DirotiQ CRM Calls',
+                DEFAULT_REMOTE_DISPLAY_NAME: 'CRM teammate',
+                HIDE_INVITE_MORE_HEADER: true,
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_POWERED_BY: false,
+                SHOW_WATERMARK_FOR_GUESTS: false
+              }
+            });
+
+            api.addListener('videoConferenceJoined', postReady);
+            api.addListener('readyToClose', () => window.close());
+          } catch (error) {
+            fail(error?.message || 'The meeting could not start.');
+          }
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
+  </body>
+</html>
