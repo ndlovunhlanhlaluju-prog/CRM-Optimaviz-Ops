@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, Brand } from '../types';
 import { BrandWorkspaceProfile, BRAND_COLOR_PRESETS } from '../config/crmConfig';
+import type { ConfirmModalConfig } from '../components/ConfirmModal';
 
 type ManagedBrand = Brand & {
   archived?: boolean;
@@ -28,6 +29,8 @@ interface UsersPageProps {
   confirmDeleteUserId: string | null;
   setConfirmDeleteUserId: (id: string | null) => void;
   handleDeleteUser: (userId: string) => Promise<void>;
+  handleWipeOpsData: () => Promise<void>;
+  showConfirm: (config: ConfirmModalConfig) => void;
   newBrandSetupMode: 'starter' | 'duplicate';
   setNewBrandSetupMode: (mode: 'starter' | 'duplicate') => void;
   newBrandSourceBrandId: string;
@@ -120,6 +123,8 @@ export default function UsersPage({
   confirmDeleteUserId,
   setConfirmDeleteUserId,
   handleDeleteUser,
+  handleWipeOpsData,
+  showConfirm,
   newBrandSetupMode,
   setNewBrandSetupMode,
   newBrandSourceBrandId,
@@ -210,6 +215,7 @@ export default function UsersPage({
     && selectedStaff!.id !== currentUser?.id;
   const canResetSelectedPassword = Boolean(selectedStaff)
     && (selectedStaff!.role !== 'admin' || isSuperAdmin || selectedStaff!.id === currentUser?.id);
+  const canRunOpsDataWipe = Boolean(currentUser && (currentUser.role === 'admin' || ['superadmin', 'owner'].includes(String(currentUser.platform_role || '').toLowerCase()) || String(currentUser.email || '').toLowerCase() === 'superadmin@optimaviz.com'));
 
   return (
     <div style={{ animation: 'fadeIn 0.3s' }}>
@@ -283,7 +289,7 @@ export default function UsersPage({
                 </div>
 
                 <div className="user-admin-detail__grid">
-                  <div><span>Created</span><strong>{new Date(selectedStaff.created_at).toLocaleDateString()}</strong></div>
+                  <div><span>Created</span><strong>{selectedStaff.created_at ? new Date(selectedStaff.created_at).toLocaleDateString() : 'Unknown'}</strong></div>
                   <div><span>Status</span><strong>{selectedStaff.presence_status || 'Not reported'}</strong></div>
                   <div><span>Security</span><strong>{selectedStaff.role === 'admin' ? 'Full admin access' : 'Operational access'}</strong></div>
                   <div><span>Brand scope</span><strong>{selectedBrandLabel}</strong></div>
@@ -362,6 +368,34 @@ export default function UsersPage({
           </main>
         </div>
       </section>
+
+      {canRunOpsDataWipe && (
+        <div style={{ marginTop: '24px', border: '1px solid rgba(239, 68, 68, 0.24)', background: 'rgba(239, 68, 68, 0.06)', borderRadius: '16px', padding: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: '11px', fontWeight: 900, color: '#b91c1c', textTransform: 'uppercase', letterSpacing: '.6px' }}>Danger zone</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, margin: '6px 0 4px' }}>Reset operational CRM data</h3>
+              <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', maxWidth: '720px' }}>
+                Remove leads, emails, calls, notes, tasks, chat activity, and other operational records while keeping brand profiles, integrations, templates, lead sources, and workspace setup intact.
+              </p>
+            </div>
+            <button
+              className="btn btn-ghost"
+              onClick={() => showConfirm({
+                title: 'Clear operational CRM data?',
+                message: 'This will permanently remove leads, emails, calls, notes, tasks, chat activity, and other operational records. Brand profile configuration, templates, integrations, and lead sources will be preserved. Continue?',
+                confirmLabel: 'Wipe operations data',
+                cancelLabel: 'Cancel',
+                isDangerous: true,
+                onConfirm: () => { void handleWipeOpsData(); },
+              })}
+              style={{ color: '#b91c1c', borderColor: 'rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.06)' }}
+            >
+              <i className="fas fa-broom"></i> Wipe operations data
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginTop: '28px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'flex-start', marginBottom: '16px' }}>

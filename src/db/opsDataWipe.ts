@@ -45,7 +45,6 @@ export function wipeOpsDataButPreserveBrandProfiles(schema: Schema): Schema {
   preserved.team_notes = [];
   preserved.usage_events = [];
   preserved.deleted_email_provider_ids = [];
-  preserved.audit_log = [];
 
   return preserved;
 }

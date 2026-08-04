@@ -2811,6 +2811,16 @@ async function startServer() {
     }
   });
 
+  app.post('/api/admin/database/wipe-ops-data', requireAdmin, (_req, res) => {
+    try {
+      db.wipeOpsDataButPreserveBrandProfiles();
+      res.json({ success: true, message: 'Operations CRM data wiped. Brand profiles and setup were preserved.' });
+    } catch (err) {
+      console.error('Operational data wipe failed:', err);
+      res.status(500).json({ success: false, detail: 'The CRM wipe could not be completed right now.' });
+    }
+  });
+
   app.get('/api/admin/website-intake/guide', requireAdmin, (_req, res) => {
     res.json({
       endpoint: '/api/public/leads',

@@ -8510,6 +8510,19 @@ export default function App() {
     }
   };
 
+  const handleWipeOpsData = async () => {
+    try {
+      const res = await axios.post('/api/admin/database/wipe-ops-data');
+      showToast(res.data?.message || 'Operations CRM data wiped. Brand profiles and setup were preserved.');
+      setLeads([]);
+      setActiveLead(null);
+      setLeadDetailTab('overview');
+      setGlobalSearchResults([]);
+    } catch (err: any) {
+      showApiError(err, 'Could not wipe operations data.');
+    }
+  };
+
   const handleUpdateUserBrands = async (targetUser: User, allowedBrandIds: string[]) => {
     try {
       const response = await axios.put(`/api/auth/users/${targetUser.id}`, {
@@ -12371,6 +12384,8 @@ export default function App() {
               confirmDeleteUserId={confirmDeleteUserId}
               setConfirmDeleteUserId={setConfirmDeleteUserId}
               handleDeleteUser={handleDeleteUser}
+              handleWipeOpsData={handleWipeOpsData}
+              showConfirm={showConfirm}
               newBrandSetupMode={newBrandSetupMode}
               setNewBrandSetupMode={setNewBrandSetupMode}
               newBrandSourceBrandId={newBrandSourceBrandId}
