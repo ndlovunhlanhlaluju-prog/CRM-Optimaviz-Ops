@@ -17,5 +17,2569 @@
       "role": "admin",
       "created_at": "2026-08-04T17:26:04.330Z"
     }
-  ]
+  ],
+  "brand_funnels": [
+    {
+      "id": "1",
+      "brand_id": "optimaviz",
+      "brand_name": "Optimaviz",
+      "stages": [
+        "New Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal Sent",
+        "Won",
+        "Lost"
+      ],
+      "created_at": "2026-06-06T21:39:12.743Z"
+    },
+    {
+      "id": "2",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "stages": [
+        "New Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal Sent",
+        "Won",
+        "Lost"
+      ],
+      "created_at": "2026-06-06T21:39:12.749Z"
+    },
+    {
+      "id": "3",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "stages": [
+        "New Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal Sent",
+        "Won",
+        "Lost"
+      ],
+      "created_at": "2026-06-06T21:39:12.751Z"
+    },
+    {
+      "id": "4",
+      "brand_id": "optimaclean",
+      "brand_name": "OptimaClean",
+      "stages": [
+        "New Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal Sent",
+        "Won",
+        "Lost"
+      ],
+      "created_at": "2026-06-06T21:39:12.752Z"
+    },
+    {
+      "id": "5",
+      "brand_id": "nestwise",
+      "brand_name": "NestWise",
+      "stages": [
+        "New Lead",
+        "Contacted",
+        "Qualified",
+        "Proposal Sent",
+        "Won",
+        "Lost"
+      ],
+      "created_at": "2026-06-06T21:39:12.754Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead-tg-seed-0",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kinga Wangmo",
+      "email": "kingawangmo207@gmail.com",
+      "phone": "452063930",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Thornlie, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Thornlie",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.280Z"
+    },
+    {
+      "id": "lead-tg-seed-1",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "John De Silva",
+      "email": "silverfoxjohn63@gmail.com",
+      "phone": "435929686",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.281Z"
+    },
+    {
+      "id": "lead-tg-seed-2",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Saurabh Shankhi",
+      "email": "saurabh.shankhi@gmail.com",
+      "phone": "416064898",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "73326705100",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.281Z"
+    },
+    {
+      "id": "lead-tg-seed-3",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Saurabh Shankhi",
+      "email": "saurabh.shankhi@gmail.com",
+      "phone": "416064898",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "House Cleaning",
+        "abn_number": "73326705100",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-4",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Saurabh Shankhi",
+      "email": "saurabh.shankhi@gmail.com",
+      "phone": "416064898",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "73326705100",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-5",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Saurabh Shankhi",
+      "email": "saurabh.shankhi@gmail.com",
+      "phone": "416064898",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "Personal Support",
+        "abn_number": "73326705100",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-6",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Saurabh Shankhi",
+      "email": "saurabh.shankhi@gmail.com",
+      "phone": "416064898",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "Disability Support",
+        "abn_number": "73326705100",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-7",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Vihanga  Miusara",
+      "email": "Miusarasamarasinghe@gmail.com",
+      "phone": "452478833",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Noble Park, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Noble Park",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-8",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Teresa Liistro",
+      "email": "liistroteresa@gmail.com",
+      "phone": "406792721",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Kinglake, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Kinglake",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-9",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shiffali .",
+      "email": "gshiffu@gmail.com",
+      "phone": "402967700",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "86875437331",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-10",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shiffali .",
+      "email": "gshiffu@gmail.com",
+      "phone": "402967700",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "House Cleaning",
+        "abn_number": "86875437331",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-11",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shiffali .",
+      "email": "gshiffu@gmail.com",
+      "phone": "402967700",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Disability Support",
+        "abn_number": "86875437331",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-12",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shiffali .",
+      "email": "gshiffu@gmail.com",
+      "phone": "402967700",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Personal Support",
+        "abn_number": "86875437331",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-13",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shiffali .",
+      "email": "gshiffu@gmail.com",
+      "phone": "402967700",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "86875437331",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-14",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Md Tashir  Imtiaz",
+      "email": "tashir.career@gmail.com",
+      "phone": "450339395",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "27889911610",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-15",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Md Tashir  Imtiaz",
+      "email": "tashir.career@gmail.com",
+      "phone": "450339395",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "House Cleaning",
+        "abn_number": "27889911610",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-16",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Srushty Chiragkumar  Pipalia",
+      "email": "srushty14@gmail.com",
+      "phone": "404014861",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Aveley, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Aveley",
+        "service_category_name": "House Cleaning",
+        "abn_number": "57478537837",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-17",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Md Minhajul Abedin  Aunta",
+      "email": "minhajulabedinaunta143@gmail.com",
+      "phone": "421433493",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Hamersley, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Hamersley",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-18",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Asha Chhetri",
+      "email": "ashachunu98@gmail.com",
+      "phone": "401712553",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "House Cleaning",
+        "abn_number": "22963758039",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-19",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Asha Chhetri",
+      "email": "ashachunu98@gmail.com",
+      "phone": "401712553",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Cloverdale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Cloverdale",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "22963758039",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-20",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Md Mizanur  Rahman",
+      "email": "rmanmizanur@gmail.com",
+      "phone": "404284665",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Wellard, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Wellard",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-21",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nick  Mitrou",
+      "email": "redbullracing1990@iprimus.com.au",
+      "phone": "414007348",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Wollert, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Wollert",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-22",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Tacian Kasong",
+      "email": "taciankashal@gmail.com",
+      "phone": "420965664",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Collingwood Park, Queensland. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Collingwood Park",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-23",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Samin Yeasar  Shams",
+      "email": "saminshams999@gmail.com",
+      "phone": "451200025",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Hurstville, New South Wales. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Hurstville",
+        "service_category_name": "House Cleaning",
+        "abn_number": "65917972124",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-24",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kenyi Cano",
+      "email": "tino.caba10@gmail.com",
+      "phone": "415750824",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: East Cannington, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "East Cannington",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-25",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nawrin Zaman",
+      "email": "nawrinzaman8@gmail.com",
+      "phone": "450860176",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Nollamara, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Nollamara",
+        "service_category_name": "House Cleaning",
+        "abn_number": "92147058567",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-26",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nawrin Zaman",
+      "email": "nawrinzaman8@gmail.com",
+      "phone": "450860176",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Nollamara, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Nollamara",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "92147058567",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-27",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Ann Traill",
+      "email": "traillan88@gmail.com",
+      "phone": "481277503",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Morley, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Morley",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-28",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sola Silas",
+      "email": "STEVABBY247@yahoo.com",
+      "phone": "432243992",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-29",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Dhanushree Karekura",
+      "email": "dhanushree27ks@gmail.com",
+      "phone": "435404061",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Melbourne, Victoria. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Melbourne",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "15601313582",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-30",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Dhanushree Karekura",
+      "email": "dhanushree27ks@gmail.com",
+      "phone": "435404061",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Melbourne, Victoria. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Melbourne",
+        "service_category_name": "House Cleaning",
+        "abn_number": "15601313582",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-31",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Anees Zafar Iqbal Abbasi",
+      "email": "aneesabbasi2797@gmail.com",
+      "phone": "402646933",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Albany, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Albany",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-32",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Tham Ncube",
+      "email": "tham@yahoo.com",
+      "phone": "6666666",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-33",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nitesh Kumar Shah",
+      "email": "nksshah131@gmail.com",
+      "phone": "414418521",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Fairfield West, New South Wales. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Fairfield West",
+        "service_category_name": "House Cleaning",
+        "abn_number": "42914739143",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-34",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sinegugu Xolo",
+      "email": "xolosinegugu@gmail.com",
+      "phone": "410673995",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Byford, Western Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Byford",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "12884480233",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-35",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sinegugu Xolo",
+      "email": "xolosinegugu@gmail.com",
+      "phone": "410673995",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Byford, Western Australia. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Byford",
+        "service_category_name": "Personal Support",
+        "abn_number": "12884480233",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-36",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sinegugu Xolo",
+      "email": "xolosinegugu@gmail.com",
+      "phone": "410673995",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Byford, Western Australia. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Byford",
+        "service_category_name": "Disability Support",
+        "abn_number": "12884480233",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-37",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Pema Gyembo",
+      "email": "pgyembo98@gmail.com",
+      "phone": "481500023",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "17385977958",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-38",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Pema Gyembo",
+      "email": "pgyembo98@gmail.com",
+      "phone": "481500023",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "House Cleaning",
+        "abn_number": "17385977958",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-39",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kelzang Choden",
+      "email": "chodentkelzang@gmail.com",
+      "phone": "409166068",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Langford, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Langford",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-40",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Yuleidis Meza Simancas ",
+      "email": "yulemezas@gmail.com",
+      "phone": "423763394",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Australind, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Australind",
+        "service_category_name": "House Cleaning",
+        "abn_number": "13468302485",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-41",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Apnila Saragih",
+      "email": "apnilasaragih@gmail.com",
+      "phone": "451376356",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Glen Iris, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Glen Iris",
+        "service_category_name": "House Cleaning",
+        "abn_number": "79230881159",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-42",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Apnila Saragih",
+      "email": "apnilasaragih@gmail.com",
+      "phone": "451376356",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Glen Iris, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Glen Iris",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "79230881159",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-43",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Dorisda Murni",
+      "email": "shintamurni@yahoo.com",
+      "phone": "480651002",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Queens Park, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Queens Park",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-44",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Winnie Jepchumba",
+      "email": "jepchumbaw981@gmail.com",
+      "phone": "415752369",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "39534309205",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-45",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Winnie Jepchumba",
+      "email": "jepchumbaw981@gmail.com",
+      "phone": "415752369",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "House Cleaning",
+        "abn_number": "39534309205",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-46",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Fanchang Yan",
+      "email": "AaronYan-@outlook.com",
+      "phone": "480415782",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "76546708770",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-47",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Fanchang Yan",
+      "email": "AaronYan-@outlook.com",
+      "phone": "480415782",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "House Cleaning",
+        "abn_number": "76546708770",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-48",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Chimi Dorji ",
+      "email": "chimmebumthap@gmail.com",
+      "phone": "414210170",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-49",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Robyn Hooper",
+      "email": "rmerritt396@gmail.com",
+      "phone": "421445777",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Warnbro, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Warnbro",
+        "service_category_name": "House Cleaning",
+        "abn_number": "46101153873",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-50",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Michael Ogugua",
+      "email": "ebolimite@gmail.com",
+      "phone": "401674171",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Tarneit, Victoria. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Tarneit",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "40967482306",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-51",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Michael Ogugua",
+      "email": "ebolimite@gmail.com",
+      "phone": "401674171",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Tarneit, Victoria. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Tarneit",
+        "service_category_name": "Personal Support",
+        "abn_number": "40967482306",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-52",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Michael Ogugua",
+      "email": "ebolimite@gmail.com",
+      "phone": "401674171",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Tarneit, Victoria. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Tarneit",
+        "service_category_name": "Disability Support",
+        "abn_number": "40967482306",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-53",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Ryan Dev",
+      "email": "spielereinzig@gmail.com",
+      "phone": "2.99219E+11",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "General Platform",
+        "abn_number": "12891289893",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-54",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Manuel Agbaje",
+      "email": "agbajemanuel47@gmail.com",
+      "phone": "8108052665",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bidwill, New South Wales. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bidwill",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-55",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Thamsanqa Ncube",
+      "email": "thamooncube@yahoo.com",
+      "phone": "415732438",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Ashfield, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Ashfield",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-56",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Mthokozisi Nhlanhla Ndlovu",
+      "email": "bhujuluju89@gmail.com",
+      "phone": "1121075991",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Broadwater, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Broadwater",
+        "service_category_name": "House Cleaning",
+        "abn_number": "87887879090",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-57",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Praise White",
+      "email": "praise.o.olawoore@gmail.com",
+      "phone": "9030256432",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bridgewater, Tasmania. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bridgewater",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-58",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kristine  Bello",
+      "email": "kristine.bello@gmail.com",
+      "phone": "421096317",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Mortdale, New South Wales. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Mortdale",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "96825306588",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-59",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kristine  Bello",
+      "email": "kristine.bello@gmail.com",
+      "phone": "421096317",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Mortdale, New South Wales. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Mortdale",
+        "service_category_name": "Personal Support",
+        "abn_number": "96825306588",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-60",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kristine  Bello",
+      "email": "kristine.bello@gmail.com",
+      "phone": "421096317",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Mortdale, New South Wales. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Mortdale",
+        "service_category_name": "Disability Support",
+        "abn_number": "96825306588",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-61",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kristine  Bello",
+      "email": "kristine.bello@gmail.com",
+      "phone": "421096317",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Mortdale, New South Wales. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Mortdale",
+        "service_category_name": "House Cleaning",
+        "abn_number": "96825306588",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-62",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Munish Mehla",
+      "email": "munishmehla06@gmail.com",
+      "phone": "6.10452E+11",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Ringwood, Victoria. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Ringwood",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-63",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sahil Alad",
+      "email": "Sahilalad8088@gmail.com",
+      "phone": "61424800839",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Perth, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-64",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kevin Kipkemboi",
+      "email": "Kevinbarmao@gmail.com",
+      "phone": "61452601574",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Melbourne, Victoria. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Melbourne",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-65",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kevin Kipkemboi",
+      "email": "Kevinbarmao@gmail.com",
+      "phone": "61452601574",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Melbourne, Victoria. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Melbourne",
+        "service_category_name": "Disability Support",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-66",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Manuel  Menjivar ",
+      "email": "dynamicsolutions1224@gmail.com",
+      "phone": "402514197",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Brabham, Western Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Brabham",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "87804914221",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-67",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Kudzai Muchemwa",
+      "email": "kudzaimuchemwa6@gmail.com",
+      "phone": "466187173",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Alexander Heights, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Alexander Heights",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-68",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Evans Ngeno",
+      "email": "masonbennett351@gmail.com",
+      "phone": "715133567",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Albert Park, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Albert Park",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-69",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Tariqul Islam",
+      "email": "tariqulislam.jt@gmail.com",
+      "phone": "61480386023",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Kelmscott, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Kelmscott",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-70",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Alija Sthapit",
+      "email": "alijasthapit@gmail.com",
+      "phone": "414795549",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Hornsby, New South Wales. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Hornsby",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-71",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Praise White",
+      "email": "olawoorejohn@gmail.com",
+      "phone": "9030256432",
+      "funnel_stage": "Won",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Atwell, Western Australia. Status: APPROVED.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Atwell",
+        "service_category_name": "House Cleaning",
+        "abn_number": "73676698070",
+        "provider_status": "APPROVED",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-72",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nhlanhla Ndlovu",
+      "email": "nanazawami89@gmail.com",
+      "phone": "1123841138",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Armadale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Armadale",
+        "service_category_name": "Disability Support",
+        "abn_number": "54646494664",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-73",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nhlanhla Ndlovu",
+      "email": "nanazawami89@gmail.com",
+      "phone": "1123841138",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Armadale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Armadale",
+        "service_category_name": "Personal Support",
+        "abn_number": "54646494664",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-74",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nhlanhla Ndlovu",
+      "email": "nanazawami89@gmail.com",
+      "phone": "1123841138",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Armadale, Western Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Armadale",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "54646494664",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-75",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Nhlanhla Ndlovu",
+      "email": "nanazawami89@gmail.com",
+      "phone": "1123841138",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Armadale, Western Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Armadale",
+        "service_category_name": "House Cleaning",
+        "abn_number": "54646494664",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-76",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Dayo Praisegod",
+      "email": "dayopraisegod@gmail.com",
+      "phone": "9033345017",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Altona, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Altona",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-77",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Thalis Thor",
+      "email": "thalizz2299@gmail.com",
+      "phone": "434793404",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Kensington Gardens, South Australia. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Kensington Gardens",
+        "service_category_name": "Personal Support",
+        "abn_number": "14377312155",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-78",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Thalis Thor",
+      "email": "thalizz2299@gmail.com",
+      "phone": "434793404",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Kensington Gardens, South Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Kensington Gardens",
+        "service_category_name": "House Cleaning",
+        "abn_number": "14377312155",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-79",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Rica Magondo",
+      "email": "ricamagondo@outlook.com",
+      "phone": "436108722",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-80",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Melissa Mufaranechisi ",
+      "email": "melz310106@gmail.com",
+      "phone": "494585075",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Wellard, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Wellard",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-81",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Wakanakaishe  Hove",
+      "email": "mengezimildred@gmail.com",
+      "phone": "452417576",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Mandurah, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Mandurah",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-82",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Samrin Banu  Shaik",
+      "email": "samrinbanushaik@gmail.com",
+      "phone": "404134089",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Melbourne, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Melbourne",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-83",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Ali  Haidari ",
+      "email": "aagha6530@gmail.com",
+      "phone": "414132299",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Beechboro, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Beechboro",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-84",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sweta Patel",
+      "email": "swetapatel96@gmail.com",
+      "phone": "61434363704",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Officer, Victoria. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Officer",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-85",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Leakena Barn",
+      "email": "tida.barn@yahoo.com",
+      "phone": "429005088",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Yangebup, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Yangebup",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-86",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Binal Man Patel",
+      "email": "binalpa1997@gmail.com",
+      "phone": "4222239630",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Adelaide, South Australia. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Adelaide",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "82997863596",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-87",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Binal Man Patel",
+      "email": "binalpa1997@gmail.com",
+      "phone": "4222239630",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Adelaide, South Australia. Status: PENDING.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Adelaide",
+        "service_category_name": "House Cleaning",
+        "abn_number": "82997863596",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-88",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Binal Man Patel",
+      "email": "binalpa1997@gmail.com",
+      "phone": "4222239630",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Commercial Cleaning. Located in: Adelaide, South Australia. Status: PENDING.",
+      "tags": [
+        "Commercial Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Adelaide",
+        "service_category_name": "Commercial Cleaning",
+        "abn_number": "82997863596",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-89",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Vivian Mwangi",
+      "email": "vivianwaitheram@gmail.com",
+      "phone": "422687021",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Westminster, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Westminster",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-90",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sukhmeet Kaur",
+      "email": "sukhmeetkaur48@gmail.com",
+      "phone": "451478400",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Melton West, Victoria. Status: PENDING.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Melton West",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "12467645457",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-91",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sukhmeet Kaur",
+      "email": "sukhmeetkaur48@gmail.com",
+      "phone": "451478400",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Personal Support. Located in: Melton West, Victoria. Status: PENDING.",
+      "tags": [
+        "Personal Support"
+      ],
+      "custom_fields": {
+        "city": "Melton West",
+        "service_category_name": "Personal Support",
+        "abn_number": "12467645457",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-92",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Sukhmeet Kaur",
+      "email": "sukhmeetkaur48@gmail.com",
+      "phone": "451478400",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Disability Support. Located in: Melton West, Victoria. Status: PENDING.",
+      "tags": [
+        "Disability Support"
+      ],
+      "custom_fields": {
+        "city": "Melton West",
+        "service_category_name": "Disability Support",
+        "abn_number": "12467645457",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-93",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Rajeev  Khagram",
+      "email": "radhika@furniturebazaar.com.au",
+      "phone": "448873078",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Stirling, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Stirling",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-94",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Shalika  Udari ",
+      "email": "shalikaudari4@gmail.com",
+      "phone": "438635953",
+      "funnel_stage": "New Lead",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: General Platform Services. Located in: Bunbury, Western Australia. Status: PENDING.",
+      "tags": [
+        "Platform Provider"
+      ],
+      "custom_fields": {
+        "city": "Bunbury",
+        "service_category_name": "General Platform",
+        "abn_number": "No ABN supplied",
+        "provider_status": "PENDING",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-95",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Optimaviz Taskgo",
+      "email": "engineering@optimaviz.com",
+      "phone": "6378763552",
+      "funnel_stage": "Won",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: Aged Care Support. Located in: Perth, Western Australia. Status: APPROVED.",
+      "tags": [
+        "Aged Care Support"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "Aged Care Support",
+        "abn_number": "73676698070",
+        "provider_status": "APPROVED",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-tg-seed-96",
+      "brand_id": "taskgo",
+      "brand_name": "TaskGo",
+      "name": "Optimaviz Taskgo",
+      "email": "engineering@optimaviz.com",
+      "phone": "6378763552",
+      "funnel_stage": "Won",
+      "notes": "Auto-ingested via TaskGo platform contractors importer. Contractor offers: House Cleaning. Located in: Perth, Western Australia. Status: APPROVED.",
+      "tags": [
+        "House Cleaning"
+      ],
+      "custom_fields": {
+        "city": "Perth",
+        "service_category_name": "House Cleaning",
+        "abn_number": "73676698070",
+        "provider_status": "APPROVED",
+        "segment": "all_platform"
+      },
+      "created_at": "2026-08-05T13:54:43.282Z"
+    },
+    {
+      "id": "lead-idao-seed-0",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Jacqueline Monama",
+      "email": "jacqueline.monama@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Freeport-McMoRan. Job: Manager Technical Services - Concentrating. Country: South Africa.",
+      "tags": [
+        "3-Day Training",
+        "South Africa"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "South Africa",
+        "company": "Freeport-McMoRan",
+        "job_title": "Manager Technical Services - Concentrating",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-18",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-1",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Kedarnath K",
+      "email": "kedarnathk260@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: N/A. Job: N/A. Country: India.",
+      "tags": [
+        "3-Day Training",
+        "India"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "India",
+        "company": "",
+        "job_title": "",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-20",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-20T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-2",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Melba Jackson",
+      "email": "chozaj78@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Debswana Diamond Company. Job: Data Scientist. Country: Botswana.",
+      "tags": [
+        "3-Day Training",
+        "Botswana"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Botswana",
+        "company": "Debswana Diamond Company",
+        "job_title": "Data Scientist",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-18",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-3",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Enoch Sio",
+      "email": "enochsio100@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Harmony Gold Mining Company Limited. Job: Plant Metallurgist. Country: Papua New Guinea.",
+      "tags": [
+        "3-Day Training",
+        "Papua New Guinea"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Papua New Guinea",
+        "company": "Harmony Gold Mining Company Limited",
+        "job_title": "Plant Metallurgist",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-19",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-19T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-4",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Mokodupe Lilian Sepheu",
+      "email": "mokodupes@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Sibanye-Stillwater. Job: Superintendent Metallurgy. Country: South Africa.",
+      "tags": [
+        "3-Day Training",
+        "South Africa"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "South Africa",
+        "company": "Sibanye-Stillwater",
+        "job_title": "Superintendent Metallurgy",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-18",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-5",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Paul Seya",
+      "email": "paulseya5@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Kamoa Copper S.A.. Job: Metallurgist. Country: Democratic Republic of the Congo.",
+      "tags": [
+        "3-Day Training",
+        "Democratic Republic of the Congo"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Democratic Republic of the Congo",
+        "company": "Kamoa Copper S.A.",
+        "job_title": "Metallurgist",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-18",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-6",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Katlego Morake",
+      "email": "mkatlego788@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Student. Job: N/A. Country: South Africa.",
+      "tags": [
+        "3-Day Training",
+        "South Africa"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "South Africa",
+        "company": "Student",
+        "job_title": "N/A",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-25",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-25T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-7",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Judh Mauro Botelho",
+      "email": "judhmauro@hotmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: CIF Cement Plant. Job: Mining Manager. Country: Angola.",
+      "tags": [
+        "3-Day Training",
+        "Angola"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Angola",
+        "company": "CIF Cement Plant",
+        "job_title": "Mining Manager",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-20",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-20T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-8",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Anthony Pucjlowski",
+      "email": "pucj001@yahoo.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Extractive Consulting Services. Job: Consulting Metallurgist. Country: South Africa.",
+      "tags": [
+        "3-Day Training",
+        "South Africa"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "South Africa",
+        "company": "Extractive Consulting Services",
+        "job_title": "Consulting Metallurgist",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-05-18",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-05-18T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-9",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Kgosiemang Pitso",
+      "email": "kgosiemang.pitso@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Premium Nickel Resources Botswana. Job: Technician. Country: Botswana.",
+      "tags": [
+        "3-Day Training",
+        "Botswana"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Botswana",
+        "company": "Premium Nickel Resources Botswana",
+        "job_title": "Technician",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-06-03",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-06-03T00:00:00.000Z"
+    },
+    {
+      "id": "lead-idao-seed-10",
+      "brand_id": "idao",
+      "brand_name": "IDAO",
+      "name": "Humeid Bicá",
+      "email": "humeidbicaa@gmail.com",
+      "phone": "",
+      "funnel_stage": "Quote Sent",
+      "notes": "Registered for 3-Day AI & Data Analytics in Mining & Mineral Processing Training Pretoria. Company: Agrodolfo Farm Lda. Job: Agricultural Engineer. Country: Mozambique.",
+      "tags": [
+        "3-Day Training",
+        "Mozambique"
+      ],
+      "custom_fields": {
+        "segment": "training_leads",
+        "service_focus": "3 Day Annual Training",
+        "country": "Mozambique",
+        "company": "Agrodolfo Farm Lda",
+        "job_title": "Agricultural Engineer",
+        "quote_status": "Quote Sent",
+        "quote_sent_date": "2026-06-01",
+        "follow_up_type": "Email then Call",
+        "follow_up_status": "Follow-Up Due",
+        "outreach_segment": "3 Day Training Outreach",
+        "outreach_status": "Quote Sent"
+      },
+      "created_at": "2026-06-01T00:00:00.000Z"
+    }
+  ],
+  "notes": [],
+  "calls": [],
+  "emails": [],
+  "whatsapp": [],
+  "whatsapp_numbers": {},
+  "whatsapp_templates": [],
+  "message_templates": [],
+  "brand_integrations": [],
+  "email_connections": [],
+  "lead_sources": [],
+  "lead_source_logs": [],
+  "brand_workspace_snapshots": [],
+  "social_connections": [],
+  "social_pages": [],
+  "social_ad_accounts": [],
+  "social_posts": [],
+  "social_ad_metrics": [],
+  "social_content_templates": [],
+  "social_brand_budgets": [],
+  "website_analytics_sites": [],
+  "website_traffic_events": [],
+  "portfolio_opportunity_rules": [],
+  "portfolio_opportunities": [],
+  "sequences": [],
+  "custom_fields": [
+    {
+      "id": "col-tg-city",
+      "brand_id": "taskgo",
+      "field_name": "city",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-tg-service",
+      "brand_id": "taskgo",
+      "field_name": "service_category_name",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-tg-abn",
+      "brand_id": "taskgo",
+      "field_name": "abn_number",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-tg-status",
+      "brand_id": "taskgo",
+      "field_name": "provider_status",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-country",
+      "brand_id": "idao",
+      "field_name": "country",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-company",
+      "brand_id": "idao",
+      "field_name": "company",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-job-title",
+      "brand_id": "idao",
+      "field_name": "job_title",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-service-focus",
+      "brand_id": "idao",
+      "field_name": "service_focus",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-quote-status",
+      "brand_id": "idao",
+      "field_name": "quote_status",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-quote-date",
+      "brand_id": "idao",
+      "field_name": "quote_sent_date",
+      "field_type": "date",
+      "required": false
+    },
+    {
+      "id": "col-id-follow-type",
+      "brand_id": "idao",
+      "field_name": "follow_up_type",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-follow-status",
+      "brand_id": "idao",
+      "field_name": "follow_up_status",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-outreach-segment",
+      "brand_id": "idao",
+      "field_name": "outreach_segment",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-outreach-status",
+      "brand_id": "idao",
+      "field_name": "outreach_status",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-mine-type",
+      "brand_id": "idao",
+      "field_name": "mine_type",
+      "field_type": "text",
+      "required": false
+    },
+    {
+      "id": "col-id-segment",
+      "brand_id": "idao",
+      "field_name": "segment",
+      "field_type": "text",
+      "required": false
+    }
+  ],
+  "enrollments": [],
+  "tasks": [],
+  "team_messages": [],
+  "team_notes": [],
+  "usage_events": [],
+  "deleted_email_provider_ids": [],
+  "audit_log": []
 }
