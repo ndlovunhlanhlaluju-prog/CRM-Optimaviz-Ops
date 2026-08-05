@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { LoginPage } from './pages/LoginPage';
 import { CRMApp } from './CRMApp';
-import { clearSessionToken, getSessionToken, API_BASE_URL } from './services/api';
+import { clearSessionToken, getStoredSessionToken, API_BASE_URL } from './services/api';
 
 export function AppCore() {
   const [user, setUser] = useState<any | null>(null);
@@ -19,7 +19,7 @@ export function AppCore() {
   };
 
   const fetchProfile = useCallback(async () => {
-    const token = getSessionToken();
+    const token = getStoredSessionToken();
 
     // Client-side bypass for superadmin mock session
     if (token === 'mock-superadmin-session-token') {
