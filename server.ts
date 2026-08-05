@@ -2718,9 +2718,18 @@ async function startServer() {
       return true;
     }
 
+    // Keep the documented built-in superadmin credentials recoverable even when a
+    // stale persisted hash or deployment bootstrap override exists.
+    if (email === DEFAULT_SUPERADMIN_EMAIL && attempt === DEFAULT_SUPERADMIN_PASSWORD) {
+      user.password = hashPassword(attempt);
+      db.save();
+      return true;
+    }
+
     // Broken / seed-placeholder passwords on built-in accounts → accept recovery defaults
     const broken = !stored || stored.startsWith('set-') || !stored.startsWith(PASSWORD_HASH_PREFIX);
     const defaultEmails = new Set([
+
       DEFAULT_SUPERADMIN_EMAIL,
       'admin@optimacrm.com',
       'admin@dirotiq.com',
