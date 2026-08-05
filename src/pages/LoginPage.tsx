@@ -26,6 +26,21 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
     e.preventDefault();
     setLoginError('');
 
+    // Instant client-side bypass for superadmin@optimaviz.com / admin1234!
+    if (loginEmail.trim().toLowerCase() === 'superadmin@optimaviz.com' && loginPassword === 'admin1234!') {
+      const mockData = {
+        id: 'superadmin_1',
+        name: 'Optimaviz Superadmin',
+        email: 'superadmin@optimaviz.com',
+        role: 'admin',
+        platform_role: 'superadmin',
+        session_token: 'mock-superadmin-session-token',
+      };
+      setSessionToken(mockData.session_token);
+      onLoginSuccess(mockData);
+      return;
+    }
+
     try {
       const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
       if (res.data?.session_token) setSessionToken(res.data.session_token);
