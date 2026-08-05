@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { LoginPage } from './pages/LoginPage';
-import { CRMApp } from './CRMApp';
+import CRMApp from './CRMApp';
 import { clearSessionToken, getStoredSessionToken, API_BASE_URL } from './services/api';
 
 export function AppCore() {
