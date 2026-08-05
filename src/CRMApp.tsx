@@ -1,14 +1,19 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import BrandDetailPage from './components/BrandDetailPage';
 
-const CRMApp: React.FC = () => {
+interface CRMAppProps {
+  user: any;
+  onLogout: () => void;
+}
+
+const CRMApp: React.FC<CRMAppProps> = ({ user, onLogout }) => {
   return (
     <Router>
-      <Switch>
-        <Route path="/brand/:id" component={BrandDetailPage} />
+      <Routes>
+        <Route path="/brand/:id" element={<BrandDetailPage />} />
         {/* Add more routes as needed */}
-      </Switch>
+      </Routes>
     </Router>
   );
 };

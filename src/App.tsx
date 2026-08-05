@@ -1,5 +1,5 @@
-import CRMApp from './AppCore';
+import { AppCore } from './AppCore';
 
 export default function App() {
-  return <CRMApp />;
+  return <AppCore />;
 }
