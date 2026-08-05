@@ -26,47 +26,18 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
     e.preventDefault();
     setLoginError('');
 
-    // Instant client-side bypass for superadmin@optimaviz.com / admin1234!
-    if (loginEmail.trim().toLowerCase() === 'superadmin@optimaviz.com' && loginPassword === 'admin1234!') {
-      const mockData = {
-        id: 'superadmin_1',
-        name: 'Optimaviz Superadmin',
-        email: 'superadmin@optimaviz.com',
-        role: 'admin',
-        platform_role: 'superadmin',
-        session_token: 'mock-superadmin-session-token',
-      };
-      setSessionToken(mockData.session_token);
-      onLoginSuccess(mockData);
-      return;
-    }
-
     try {
       const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
       if (res.data?.session_token) setSessionToken(res.data.session_token);
       onLoginSuccess(res.data);
     } catch (err: any) {
-      // Offline fallback for superadmin@optimaviz.com / admin1234! if backend is unreachable
-      if (!err.response && loginEmail.trim().toLowerCase() === 'superadmin@optimaviz.com' && loginPassword === 'admin1234!') {
-        const mockData = {
-          id: 'superadmin_1',
-          name: 'Optimaviz Superadmin',
-          email: 'superadmin@optimaviz.com',
-          role: 'admin',
-          platform_role: 'superadmin',
-          session_token: 'mock-superadmin-session-token',
-        };
-        setSessionToken(mockData.session_token);
-        onLoginSuccess(mockData);
-        return;
-      }
-
       const status = err.response?.status;
       if (status === 429) {
         setLoginError(toUserFacingError(err, 'Too many login attempts. Wait a minute and try again.'));
       } else if (!err.response) {
         setLoginError('Cannot reach the server. Check your connection and try again.');
       } else if (status === 404 || status >= 500) {
+
         setLoginError('Login is temporarily unavailable. Please try again in a moment.');
       } else {
         setLoginError(toUserFacingError(err, 'Invalid email or password.'));
@@ -90,73 +61,70 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
 
   const backendLabel = apiBaseHint || API_BASE_URL;
 
-  const buttonClasses = "w-full p-3 rounded-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
-  const inputClasses = "w-full px-3.5 py-3 border border-border rounded-lg text-sm outline-none bg-transparent";
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-5">
-      <div className="bg-card p-10 rounded-2xl shadow-lg border border-border max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', padding: '20px' }}>
+      <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '20px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)', maxWidth: '440px', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ width: '80px', height: '80px', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <DirotiQLogo size={80} />
           </div>
-          <h1 className="text-2xl font-bold mb-2">{APP_NAME}</h1>
-          <p className="text-muted-foreground text-sm">Sign in to your internal administrative workspace</p>
-          {backendLabel && (
-            <p className="text-muted-foreground text-xs mt-2">
+          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>{APP_NAME}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Sign in to your internal administrative workspace</p>
+          {backendLabel ? (
+            <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '8px' }}>
               Connected to platform API
             </p>
-          )}
+          ) : null}
         </div>
 
         {!showForgotPw ? (
           <form onSubmit={handleLoginSubmit}>
             {loginError && (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm mb-4 flex items-center">
-                <i className="fas fa-exclamation-circle mr-2"></i> {loginError}
+              <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#b91c1c', padding: '12px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
+                <i className="fas fa-exclamation-circle" style={{ marginRight: '6px' }}></i> {loginError}
               </div>
             )}
 
-            <div className="mb-4">
-              <label className="block text-sm font-semibold mb-1.5">Email</label>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Email</label>
               <input
                 type="email"
                 value={loginEmail}
                 onChange={e => setLoginEmail(e.target.value)}
                 required
                 placeholder="name@gmail.com"
-                className={inputClasses}
+                style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
               />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-semibold mb-1.5">Password</label>
-              <div className="relative">
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Password</label>
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={e => setLoginPassword(e.target.value)}
                   required
                   placeholder="Enter your security credentials"
-                  className={`${inputClasses} pr-10`}
+                  style={{ width: '100%', padding: '12px 42px 12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 inline-flex items-center justify-center text-muted-foreground"
+                  style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', padding: 0, lineHeight: 1 }}
                 >
                   <i className={showLoginPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
                 </button>
               </div>
             </div>
 
-            <button type="submit" className={buttonClasses}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
               Sign in
             </button>
             <button
               type="button"
               onClick={() => { setShowForgotPw(true); setForgotStep('email'); setForgotError(''); }}
-              className="mt-3.5 w-full text-muted-foreground text-xs"
+              style={{ marginTop: '14px', width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}
             >
               Forgot password?
             </button>
@@ -164,27 +132,27 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
         ) : (
           <form onSubmit={handleForgotSubmit}>
             {forgotStep === 'done' ? (
-              <div className="text-sm text-secondary-foreground leading-relaxed">
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                 If an account exists for that email, reset instructions were sent. Check your inbox, then sign in again.
               </div>
             ) : (
               <>
                 {forgotError && (
-                  <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm mb-4">
+                  <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#b91c1c', padding: '12px 14px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>
                     {forgotError}
                   </div>
                 )}
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold mb-1.5">Account email</label>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Account email</label>
                   <input
                     type="email"
                     value={forgotEmail}
                     onChange={e => setForgotEmail(e.target.value)}
                     required
-                    className={inputClasses}
+                    style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
                   />
                 </div>
-                <button type="submit" className={buttonClasses} disabled={forgotLoading}>
+                <button type="submit" className="btn btn-primary" disabled={forgotLoading} style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
                   {forgotLoading ? 'Sending…' : 'Send reset link'}
                 </button>
               </>
@@ -192,7 +160,7 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
             <button
               type="button"
               onClick={() => setShowForgotPw(false)}
-              className="mt-3.5 w-full text-muted-foreground text-xs"
+              style={{ marginTop: '14px', width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}
             >
               Back to sign in
             </button>
