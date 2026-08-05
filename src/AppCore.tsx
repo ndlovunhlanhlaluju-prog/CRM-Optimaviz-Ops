@@ -346,8 +346,11 @@ export default function App() {
 
   const handleLoginSuccess = (payload: any) => {
     if (payload?.session_token) setSessionToken(payload.session_token);
-    const { session_token: _t, ...safeUser } = payload || {};
-    setUser(safeUser);
+    // Support both flat user payload { id, name, session_token } and nested { user: { id, name }, session_token }
+    const rawUser = payload?.user && typeof payload.user === 'object' && payload.user.id ? payload.user : payload;
+    const { session_token: _t, user: _u, ...safeUser } = rawUser || {};
+    setUser(safeUser as User);
+    if (safeUser?.name) setProfileName(safeUser.name);
   };
 
   const getAttachmentDownloadName = (disposition: string | undefined, fallback: string) => {
