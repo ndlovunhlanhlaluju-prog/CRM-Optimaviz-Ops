@@ -6593,7 +6593,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     res.json(db.get().users.filter(user => !isProtectedOwnerUser(user)).map(publicUser));
   });
 
-  app.post('/api/auth/users', requireAdmin, (req, res) => {
+  const createManagedUser = (req: express.Request, res: express.Response) => {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password || !role) { res.status(400).json({ detail: 'Missing required user fields' }); return; }
     const normalizedEmail = sanitizeString(email, 254).toLowerCase();
@@ -6611,7 +6611,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       res.status(403).json({ detail: 'Only the superadmin can add platform admins.' });
       return;
     }
-    const duplicate = db.get().users.some(u => u.email.toLowerCase() === email.toLowerCase());
+    const duplicate = db.get().users.some(u => u.email.toLowerCase() === normalizedEmail);
     if (duplicate) { res.status(400).json({ detail: 'User email already registered.' }); return; }
     const newUser: DbUser = {
       id: newId('user'),
@@ -6627,7 +6627,12 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     auditSecurityEvent(req, 'user_create', { target_user_id: newUser.id, target_email: newUser.email, target_role: newUser.role });
     db.save();
     res.status(201).json(publicUser(newUser));
-  });
+  };
+
+  // Keep the legacy auth-prefixed endpoint while using the same canonical
+  // collection route that User Management already uses to load the roster.
+  app.post('/api/users', requireAdmin, createManagedUser);
+  app.post('/api/auth/users', requireAdmin, createManagedUser);
 
   app.put('/api/auth/users/:user_id', requireAuth, (req, res) => {
     const { user_id } = req.params;

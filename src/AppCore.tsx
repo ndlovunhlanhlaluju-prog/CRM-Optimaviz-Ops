@@ -8491,7 +8491,7 @@ export default function App() {
     };
     setUserSaving(true);
     try {
-      await axios.post('/api/auth/users', payload);
+      await axios.post('/api/users', payload);
       setUserForm({ name: '', email: '', password: '', role: 'user', allowed_brand_ids: [] });
       setAddUserIsOpen(false);
       fetchUsersList();
