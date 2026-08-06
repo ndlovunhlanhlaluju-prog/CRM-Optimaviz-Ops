@@ -346,8 +346,6 @@ export default function App() {
     }
   }, [user]);
 
-  const loginSuccessRef = { current: false };
-
   const handleLoginSuccess = (payload: any) => {
     loginSuccessRef.current = true;
     if (payload?.session_token) setSessionToken(payload.session_token);
