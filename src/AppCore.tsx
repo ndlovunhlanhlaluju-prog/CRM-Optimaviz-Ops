@@ -344,9 +344,11 @@ export default function App() {
     }
   }, [user]);
 
+  const loginSuccessRef = { current: false };
+
   const handleLoginSuccess = (payload: any) => {
+    loginSuccessRef.current = true;
     if (payload?.session_token) setSessionToken(payload.session_token);
-    // Support both flat user payload { id, name, session_token } and nested { user: { id, name }, session_token }
     const rawUser = payload?.user && typeof payload.user === 'object' && payload.user.id ? payload.user : payload;
     const { session_token: _t, user: _u, ...safeUser } = rawUser || {};
     setUser(safeUser as User);
@@ -2664,7 +2666,9 @@ export default function App() {
       fetchTeamMessages();
       fetchTeamNotes();
     } catch {
-      setUser(null);
+      if (!loginSuccessRef.current) {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
