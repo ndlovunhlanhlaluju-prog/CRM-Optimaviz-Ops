@@ -658,8 +658,35 @@ export interface Schema {
 }
 
 /** Standalone local persistence paths. Configure absolute paths when needed. */
-const DB_PATH = path.resolve(process.env['CRM_DB_FILE'] || path.join(process.cwd(), 'db.json'));
-const BACKUP_DIR = path.resolve(process.env['CRM_BACKUP_DIR'] || path.join(process.cwd(), 'backups', 'ops'));
+const DEFAULT_DB_PATH = path.join(process.cwd(), 'db.json');
+const DEFAULT_BACKUP_DIR = path.join(process.cwd(), 'backups', 'ops');
+let DB_PATH = path.resolve(process.env['CRM_DB_FILE'] || DEFAULT_DB_PATH);
+let BACKUP_DIR = path.resolve(process.env['CRM_BACKUP_DIR'] || DEFAULT_BACKUP_DIR);
+
+function isPathWritable(testPath: string): boolean {
+  try {
+    const dir = path.dirname(testPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const probe = path.join(dir, `.write-probe-${process.pid}-${Date.now()}`);
+    fs.writeFileSync(probe, '');
+    fs.unlinkSync(probe);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+if (!isPathWritable(DB_PATH)) {
+  const fallbackDir = '/tmp';
+  try {
+    if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
+    DB_PATH = path.resolve(process.env['CRM_DB_FILE'] || path.join(fallbackDir, 'db.json'));
+    BACKUP_DIR = path.resolve(process.env['CRM_BACKUP_DIR'] || path.join(fallbackDir, 'backups', 'ops'));
+    console.log(`[CRM DB] Default path not writable, using fallback file=${DB_PATH} backups=${BACKUP_DIR}`);
+  } catch {
+    console.warn('[CRM DB] Fallback writable path unavailable; database may be read-only.');
+  }
+}
 
 console.log(`[CRM DB] standalone file=${DB_PATH} backups=${BACKUP_DIR}`);
 
