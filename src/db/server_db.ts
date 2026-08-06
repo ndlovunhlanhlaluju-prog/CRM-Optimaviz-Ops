@@ -658,12 +658,14 @@ export interface Schema {
 }
 
 /** Standalone local persistence paths. */
+const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
+const DB_ROOT = isVercel ? '/tmp' : process.cwd();
 const DB_PATH = path.join(
-  process.cwd(),
+  DB_ROOT,
   process.env['CRM_DB_FILE'] || 'db.json',
 );
 const BACKUP_DIR = path.join(
-  process.cwd(),
+  DB_ROOT,
   process.env['CRM_BACKUP_DIR'] || path.join('backups', 'ops'),
 );
 
