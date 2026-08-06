@@ -308,13 +308,11 @@ export default function App() {
     safeLocalStorage.setItem('crm_sidebar_style', sidebarStyle);
   }, [sidebarStyle]);
 
-  const loginSuccessRef = { current: false };
-
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
       error => {
-        if (error?.response?.status === 401 && !loginSuccessRef.current) {
+        if (error?.response?.status === 401 && error?.response?.data?.code === 'AUTH_REQUIRED') {
           setUser(null);
           safeLocalStorage.removeItem('optima_user');
           clearSessionToken();
@@ -335,19 +333,18 @@ export default function App() {
     }
   });
 
-  // Synchronize user to localStorage (bearer token is managed via setSessionToken)
+  // Synchronize the public user profile to localStorage. Session tokens are
+  // cleared only by an explicit logout or a confirmed AUTH_REQUIRED response.
   useEffect(() => {
     if (user && user.id) {
       const { session_token: _drop, ...safe } = user as User & { session_token?: string };
       safeLocalStorage.setItem('optima_user', JSON.stringify(safe));
     } else {
       safeLocalStorage.removeItem('optima_user');
-      clearSessionToken();
     }
   }, [user]);
 
   const handleLoginSuccess = (payload: any) => {
-    loginSuccessRef.current = true;
     if (payload?.session_token) setSessionToken(payload.session_token);
     const rawUser = payload?.user && typeof payload.user === 'object' && payload.user.id ? payload.user : payload;
     const { session_token: _t, user: _u, ...safeUser } = rawUser || {};
@@ -2666,9 +2663,7 @@ export default function App() {
       fetchTeamMessages();
       fetchTeamNotes();
     } catch {
-      if (!loginSuccessRef.current) {
-        setUser(null);
-      }
+      setUser(null);
     } finally {
       setLoading(false);
     }

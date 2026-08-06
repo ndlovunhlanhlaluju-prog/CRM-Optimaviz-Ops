@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { DirotiQLogo, APP_NAME } from '../config/crmConfig';
-import { setSessionToken, API_BASE_URL } from '../services/api';
+import { API_BASE_URL } from '../services/api';
 import { toUserFacingError } from '../utils/userFacingError';
 
 interface LoginPageProps {
@@ -28,7 +28,6 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
 
     try {
       const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
-      if (res.data?.session_token) setSessionToken(res.data.session_token);
       onLoginSuccess(res.data);
     } catch (err: any) {
       const status = err.response?.status;

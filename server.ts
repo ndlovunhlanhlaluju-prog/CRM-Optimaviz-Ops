@@ -601,7 +601,7 @@ function newId(prefix: string): string {
   return `${prefix}-${randomUUID()}`;
 }
 
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const PASSWORD_HASH_PREFIX = 'scrypt$';
 
 function hashPassword(password: string): string {
@@ -2565,7 +2565,7 @@ async function startServer() {
   // Auth middleware â€” attaches req.user with proper TypeScript type
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const user = getSessionUser(req);
-    if (!user) { res.status(401).json({ detail: 'Authentication required' }); return; }
+    if (!user) { res.status(401).json({ detail: 'Authentication required', code: 'AUTH_REQUIRED' }); return; }
     req.user = user;
     next();
   };
@@ -3316,7 +3316,7 @@ async function startServer() {
 
   app.get('/api/auth/me', (req, res) => {
     const user = getSessionUser(req);
-    if (!user) { res.status(401).json({ detail: 'Not authenticated' }); return; }
+    if (!user) { res.status(401).json({ detail: 'Not authenticated', code: 'AUTH_REQUIRED' }); return; }
     res.json(publicUser(user));
   });
 
