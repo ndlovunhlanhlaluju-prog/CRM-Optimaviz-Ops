@@ -6752,6 +6752,19 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
   });
 
   // â”€â”€â”€ Vite dev / production static â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // API requests must never fall through to the React application. Returning
+  // structured JSON keeps missing routes distinct from authentication failures.
+  app.use('/api', (req, res) => {
+    res.status(404).json({ detail: 'API endpoint not found.', code: 'API_NOT_FOUND', path: req.path });
+  });
+
+  app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(`Unhandled API error for ${req.method} ${req.originalUrl}:`, err);
+    if (!res.headersSent) {
+      res.status(503).json({ detail: 'The service is temporarily unavailable.', code: 'SERVICE_UNAVAILABLE' });
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     try {
       const { createServer: createViteServer } = await import('vite');

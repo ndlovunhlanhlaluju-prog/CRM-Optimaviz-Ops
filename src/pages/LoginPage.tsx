@@ -14,6 +14,7 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   // Forgot password sub-state
   const [showForgotPw, setShowForgotPw] = useState(false);
@@ -24,23 +25,38 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loginLoading) return;
     setLoginError('');
+    setLoginLoading(true);
 
     try {
-      const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
-      onLoginSuccess(res.data);
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        try {
+          const res = await axios.post('/api/auth/login', { email: loginEmail, password: loginPassword });
+          onLoginSuccess(res.data);
+          return;
+        } catch (err: any) {
+          const status = Number(err.response?.status || 0);
+          const isTransient = !err.response || [502, 503, 504].includes(status);
+          if (!isTransient || attempt === 3) throw err;
+          await new Promise(resolve => window.setTimeout(resolve, (attempt + 1) * 1000));
+        }
+      }
     } catch (err: any) {
       const status = err.response?.status;
       if (status === 429) {
         setLoginError(toUserFacingError(err, 'Too many login attempts. Wait a minute and try again.'));
       } else if (!err.response) {
         setLoginError('Cannot reach the server. Check your connection and try again.');
-      } else if (status === 404 || status >= 500) {
-
+      } else if (status === 404) {
+        setLoginError('The login service is not available on this deployment.');
+      } else if (status >= 500) {
         setLoginError('Login is temporarily unavailable. Please try again in a moment.');
       } else {
         setLoginError(toUserFacingError(err, 'Invalid email or password.'));
       }
+    } finally {
+      setLoginLoading(false);
     }
   };
 
@@ -117,11 +133,12 @@ export function LoginPage({ onLoginSuccess, apiBaseHint }: LoginPageProps) {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
-              Sign in
+            <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ width: '100%', padding: '12px', borderRadius: '10px', fontWeight: 700 }}>
+              {loginLoading ? 'Connecting securely...' : 'Sign in'}
             </button>
             <button
               type="button"
+              disabled={loginLoading}
               onClick={() => { setShowForgotPw(true); setForgotStep('email'); setForgotError(''); }}
               style={{ marginTop: '14px', width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer' }}
             >
