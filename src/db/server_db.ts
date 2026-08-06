@@ -657,17 +657,9 @@ export interface Schema {
   audit_log: AuditEntry[];
 }
 
-/** Standalone local persistence paths. */
-const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_ENV);
-const DB_ROOT = isVercel ? '/tmp' : process.cwd();
-const DB_PATH = path.join(
-  DB_ROOT,
-  process.env['CRM_DB_FILE'] || 'db.json',
-);
-const BACKUP_DIR = path.join(
-  DB_ROOT,
-  process.env['CRM_BACKUP_DIR'] || path.join('backups', 'ops'),
-);
+/** Standalone local persistence paths. Configure absolute paths when needed. */
+const DB_PATH = path.resolve(process.env['CRM_DB_FILE'] || path.join(process.cwd(), 'db.json'));
+const BACKUP_DIR = path.resolve(process.env['CRM_BACKUP_DIR'] || path.join(process.cwd(), 'backups', 'ops'));
 
 console.log(`[CRM DB] standalone file=${DB_PATH} backups=${BACKUP_DIR}`);
 

@@ -1,13 +1,16 @@
 import axios from 'axios';
 
 /**
- * The standalone frontend and backend are served by the same process.
- * Keeping API requests relative ensures the browser always uses the bundled backend.
+ * Keep the default deployment self-contained: the browser talks to the same
+ * origin that served the UI. A split deployment can opt in with
+ * VITE_API_BASE_URL without changing application code.
  */
-export const API_BASE_URL = '';
+export const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '')
+  .trim()
+  .replace(/\/+$/, '');
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = undefined;
+axios.defaults.baseURL = API_BASE_URL || undefined;
 
 export const SESSION_TOKEN_KEY = 'optima_session_token';
 

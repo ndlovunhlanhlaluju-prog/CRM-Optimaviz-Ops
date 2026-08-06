@@ -5,6 +5,6 @@
 - [ ] Rebuild the app (`npm run build`).
 - [x] Fixed Vite config to avoid ESM `require.resolve` crash.
 
-- [ ] Deploy / reload on Render to confirm the runtime crash is fixed.
+- [ ] Deploy / reload on the selected hosting platform to confirm the production runtime is healthy.
 
 

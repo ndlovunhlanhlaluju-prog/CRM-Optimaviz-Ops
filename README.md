@@ -6,7 +6,7 @@ A standalone multi-brand CRM containing its React frontend, Express backend, aut
 
 - React and Vite provide the user interface.
 - Express owns all `/api/*` routes.
-- The browser always uses same-origin API requests.
+- The browser uses same-origin API requests by default. Set `VITE_API_BASE_URL` only when deliberately hosting the UI and API separately.
 - `db.json` is the authoritative local database, with backups in `backups/ops/`.
 - The production Express process serves the compiled React application from `dist/`.
 - No separate CRM SaaS platform is required.
@@ -17,5 +17,6 @@ A standalone multi-brand CRM containing its React frontend, Express backend, aut
 - `npm run build` compiles both frontend and backend.
 - `npm start` runs the complete production application.
 - `GET /api/health` verifies that the standalone backend is available.
+- The app has no required hosting-provider dependency or hardcoded production URL.
 
 See [STANDALONE_ARCHITECTURE.md](./STANDALONE_ARCHITECTURE.md) for deployment and persistence details.

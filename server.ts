@@ -1019,18 +1019,14 @@ const MICROSOFT_GRAPH_SCOPES = 'offline_access openid email profile User.Read Ma
 /** Legacy in-memory Outlook states (pre signed-state). Kept only as a short fallback during deploy rollout. */
 const microsoftOAuthStates = new Map<string, { brandId: string; userId: string; createdAt: number; returnTo?: string }>();
 
-/**
- * True when a URL/origin is the API host (Render), not the SPA (Vercel).
- * PUBLIC_CRM_URL is often mis-set to the Render service — never bounce OAuth there.
- */
-function isApiHostUrl(value: string): boolean {
+/** True when a URL matches the explicitly configured API origin. */
+function isConfiguredApiUrl(value: string): boolean {
   const raw = sanitizeString(value || '', 300).replace(/\/$/, '');
   if (!raw) return false;
   try {
     const url = new URL(raw.includes('://') ? raw : `https://${raw}`);
     const host = url.hostname.toLowerCase();
     if (!host) return false;
-    if (host.endsWith('.onrender.com')) return true;
     const apiEnv = [
       process.env.PUBLIC_API_URL,
       process.env.API_PUBLIC_URL,
@@ -1049,22 +1045,13 @@ function isApiHostUrl(value: string): boolean {
   return false;
 }
 
-/** Vercel SPA / local dev — safe browser bounce targets after OAuth on the API host. */
-function isSpaFrontendOrigin(origin: string): boolean {
+/** Local development is always a valid browser return origin. */
+function isLocalOrigin(origin: string): boolean {
   const clean = origin.replace(/\/$/, '');
-  if (!clean) return false;
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(clean)) return true;
-  try {
-    const host = new URL(clean).hostname.toLowerCase();
-    // Product UI is hosted on Vercel (e.g. dirotiq-crm.vercel.app); API is on Render.
-    if (host.endsWith('.vercel.app')) return true;
-  } catch {
-    return false;
-  }
-  return false;
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(clean);
 }
 
-/** Origins the SPA may live on (Vercel ops UI, local Vite, etc.). Used for OAuth return + open-redirect guards. */
+/** Configured browser origins used for OAuth return + open-redirect guards. */
 function getTrustedFrontendOrigins(): string[] {
   const fromList = String(process.env.CORS_ORIGINS || '')
     .split(',')
@@ -1078,13 +1065,11 @@ function getTrustedFrontendOrigins(): string[] {
   ]
     .map(s => sanitizeString(s || '', 300).replace(/\/$/, ''))
     .filter(Boolean);
-  // Drop API/Render hosts from the SPA allowlist so bounce-back cannot prefer them.
-  return Array.from(new Set([...singles, ...fromList])).filter(origin => !isApiHostUrl(origin));
+  return Array.from(new Set([...singles, ...fromList])).filter(origin => !isConfiguredApiUrl(origin));
 }
 
 function getFrontendBaseUrl(req: express.Request): string {
-  // Prefer explicit SPA origins so OAuth bounce-back never lands on the Render API host.
-  // Do not fall through to PUBLIC_CRM_URL when it points at onrender.com (common Render misconfig).
+  // Prefer explicit frontend origins for split deployments.
   const preferred = [
     process.env.FRONTEND_URL,
     process.env.APP_BASE_URL,
@@ -1093,17 +1078,17 @@ function getFrontendBaseUrl(req: express.Request): string {
   ]
     .map(s => sanitizeString(s || '', 300).replace(/\/$/, ''))
     .filter(Boolean)
-    .filter(u => !isApiHostUrl(u));
+    .filter(u => !isConfiguredApiUrl(u));
   if (preferred[0]) return preferred[0];
 
   const origin = String(req.headers.origin || '').replace(/\/$/, '');
-  if (origin && isTrustedFrontendOrigin(origin) && !isApiHostUrl(origin)) return origin;
+  if (origin && isTrustedFrontendOrigin(origin) && !isConfiguredApiUrl(origin)) return origin;
 
   const referer = String(req.headers.referer || '').trim();
   if (referer) {
     try {
       const refOrigin = new URL(referer).origin;
-      if (isTrustedFrontendOrigin(refOrigin) && !isApiHostUrl(refOrigin)) return refOrigin;
+      if (isTrustedFrontendOrigin(refOrigin) && !isConfiguredApiUrl(refOrigin)) return refOrigin;
     } catch { /* ignore */ }
   }
 
@@ -1115,14 +1100,11 @@ function getFrontendBaseUrl(req: express.Request): string {
 function isTrustedFrontendOrigin(origin: string): boolean {
   const clean = origin.replace(/\/$/, '');
   if (!clean) return false;
-  // Never treat the API host as a browser return target.
-  if (isApiHostUrl(clean)) return false;
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(clean)) return true;
-  // Always allow Vercel SPA hosts — UI and API are split (Vercel ↔ Render).
-  if (isSpaFrontendOrigin(clean)) return true;
+  if (isConfiguredApiUrl(clean)) return false;
+  if (isLocalOrigin(clean)) return true;
   const trusted = getTrustedFrontendOrigins();
   if (trusted.length === 0) {
-    // No allowlist configured: accept any https origin that is not the API host.
+    // No allowlist configured: accept any http(s) origin except the configured API origin.
     // Prefer setting FRONTEND_URL / CORS_ORIGINS in production.
     return clean.startsWith('https://') || clean.startsWith('http://');
   }
@@ -1138,8 +1120,7 @@ function sanitizeReturnTo(value: unknown, fallback = '/'): string {
       if (!['http:', 'https:'].includes(url.protocol)) return fallback;
       if (/javascript:|data:/.test(raw)) return fallback;
       const origin = `${url.protocol}//${url.host}`;
-      // Absolute return_to from the SPA must never be the API host (Render).
-      if (isApiHostUrl(origin) || !isTrustedFrontendOrigin(origin)) return fallback;
+      if (isConfiguredApiUrl(origin) || !isTrustedFrontendOrigin(origin)) return fallback;
       // Keep path so user lands back on Integrations / Social Hub (or wherever they started).
       const path = (url.pathname || '/') + (url.search || '');
       const safePath = path.split('#')[0] || '/';
@@ -1155,11 +1136,7 @@ function sanitizeReturnTo(value: unknown, fallback = '/'): string {
   return raw.split('#')[0] || fallback;
 }
 
-/**
- * Build absolute URL to send the browser after OAuth.
- * Prefer absolute returnTo from the UI (Vercel); otherwise FRONTEND_URL + path.
- * Never leave the user stuck on the API host (Render) when a frontend base is known.
- */
+/** Build the browser URL to use after an OAuth callback. */
 function buildOAuthReturnUrl(req: express.Request, returnTo: unknown, statusQuery: string): string {
   const frontendBase = getFrontendBaseUrl(req).replace(/\/$/, '');
   const cleaned = sanitizeReturnTo(returnTo, '/');
@@ -1171,18 +1148,9 @@ function buildOAuthReturnUrl(req: express.Request, returnTo: unknown, statusQuer
   } else {
     target = cleaned || '/';
   }
-  // Last line of defense: relative paths would stay on Render; API-host absolutes must be rewritten.
-  try {
-    if (target.startsWith('http://') || target.startsWith('https://')) {
-      const targetOrigin = new URL(target).origin;
-      if (isApiHostUrl(targetOrigin) && frontendBase && !isApiHostUrl(frontendBase)) {
-        const path = target.startsWith(targetOrigin) ? target.slice(targetOrigin.length) || '/' : '/';
-        target = `${frontendBase}${path.startsWith('/') ? path : `/${path}`}`;
-      }
-    } else if (frontendBase && !target.startsWith('http')) {
-      target = `${frontendBase}${target === '/' ? '' : target}` || frontendBase;
-    }
-  } catch { /* keep target */ }
+  if (frontendBase && !target.startsWith('http')) {
+    target = `${frontendBase}${target === '/' ? '' : target}` || frontendBase;
+  }
   const join = target.includes('?') ? '&' : '?';
   return `${target}${join}${statusQuery}`;
 }
@@ -1203,7 +1171,7 @@ function extractReturnTo(req: express.Request): string {
     const sanitized = sanitizeReturnTo(bodyReturnTo);
     if (sanitized && sanitized !== '/') return sanitized;
   }
-  // Prefer full origin+path from the SPA Referer (cross-origin: Vercel → Render API).
+  // Prefer the full origin+path from the frontend Referer for split deployments.
   const referer = String(req.headers.referer || '').trim();
   if (referer) {
     try {
@@ -1223,11 +1191,7 @@ function extractReturnTo(req: express.Request): string {
   return '/';
 }
 
-/**
- * Signed OAuth state for mailbox providers (Gmail / Outlook).
- * Embeds absolute returnTo (Vercel SPA) so multi-instance Render can bounce users
- * back without relying on in-memory Maps.
- */
+/** Signed OAuth state for mailbox providers (Gmail / Outlook). */
 function createMailboxOAuthState(brandId: string, userId: string, returnTo: string, provider: 'gmail' | 'outlook' = 'gmail'): string {
   const payload = {
     brandId: sanitizeString(brandId, 40),
@@ -1438,10 +1402,7 @@ function getPublicBaseUrl(req: express.Request): string {
   return sanitizeString(process.env.PUBLIC_CRM_URL || `${proto}://${req.get('host')}`, 300).replace(/\/$/, '');
 }
 
-/**
- * Base URL of this API process (Render SaaS host), not the SPA (Vercel).
- * OAuth provider callbacks MUST hit the API, never the frontend origin.
- */
+/** Base URL of this API process. Provider callbacks must hit the API origin. */
 function getApiBaseUrl(req: express.Request): string {
   const explicit = sanitizeString(
     process.env.PUBLIC_API_URL || process.env.API_PUBLIC_URL || process.env.SAAS_API_URL || '',
@@ -1462,7 +1423,7 @@ function getGmailRedirectUri(req: express.Request): string {
   const isLocalRequest = /^localhost(?::\d+)?$/i.test(host) || /^127\.0\.0\.1(?::\d+)?$/i.test(host);
   const configuredIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(configured);
   if (configured && (!configuredIsLocal || isLocalRequest)) return configured;
-  // Prefer request host (Render API) over PUBLIC_CRM_URL which may point at the Vercel SPA.
+  // Prefer the current API request host over a separately configured app URL.
   return `${getApiBaseUrl(req)}/api/integrations/gmail/callback`;
 }
 
@@ -1479,7 +1440,7 @@ function getMicrosoftRedirectUri(req: express.Request): string {
   const configured = sanitizeString(process.env.MICROSOFT_REDIRECT_URI || '', 500);
   const isLocalRequest = /^localhost(?::\d+)?$/i.test(host) || /^127\.0\.0\.1(?::\d+)?$/i.test(host);
   const configuredIsLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/|$)/i.test(configured);
-  // Same rule as Gmail: never send Microsoft to the Vercel SPA; callback must hit the API host.
+  // Provider callbacks must hit the API host, not a separately hosted frontend.
   if (configured && (!configuredIsLocal || isLocalRequest)) return configured;
   return `${getApiBaseUrl(req)}/api/integrations/outlook/callback`;
 }
@@ -2089,7 +2050,7 @@ async function sendSmtpMessage(db: LocalDb, brandId: string, options: { to: stri
     throw new Error('SMTP is not fully configured. Add host and username for this mailbox.');
   }
   if (!password) {
-    throw new Error(passwordEnv ? `SMTP password was not found in Render env var "${passwordEnv}".` : 'SMTP password/app password is missing for this mailbox.');
+    throw new Error(passwordEnv ? `SMTP password was not found in environment variable "${passwordEnv}".` : 'SMTP password/app password is missing for this mailbox.');
   }
 
   const fromName = cleanMailHeader(integration.email_sender_name || BRAND_NAMES[brandId] || 'DirotiQ CRM', 120);
@@ -2123,10 +2084,10 @@ async function sendSmtpMessage(db: LocalDb, brandId: string, options: { to: stri
   } catch (err: any) {
     const raw = sanitizeString(err?.message || err?.code || 'SMTP send failed.', 1000);
     if (/timeout|timed out|etimedout|esocket/i.test(raw)) {
-      throw new Error(`Outlook SMTP timed out. Check host "${host}", port ${port}, SSL/TLS setting, and whether Render can reach Outlook SMTP.`);
+      throw new Error(`Outlook SMTP timed out. Check host "${host}", port ${port}, and the SSL/TLS setting.`);
     }
     if (/auth|login|password|credentials|535|5\.7\.3|5\.7\.57/i.test(raw)) {
-      throw new Error(`Outlook rejected the login for "${username}". Check the Render password variable "${passwordEnv}" and use an Outlook app password if normal password login is blocked.`);
+      throw new Error(`Outlook rejected the login for "${username}". Check environment variable "${passwordEnv}" and use an Outlook app password if normal password login is blocked.`);
     }
     throw new Error(raw);
   }
@@ -2417,11 +2378,15 @@ function findLeadByWhatsAppPhone(db: LocalDb, brandId: string, phone: string): D
   });
 }
 
-async function startServer() {
+/**
+ * Build the Express application without binding a port.
+ *
+ * The standalone entrypoint below calls this and starts a normal Node server.
+ * Other hosting adapters can import the same factory without duplicating the
+ * route registration or introducing provider-specific behavior here.
+ */
+export async function createApp() {
   const app = express();
-  const portFlagIndex = process.argv.indexOf('--port');
-  const cliPort = portFlagIndex >= 0 ? process.argv[portFlagIndex + 1] : undefined;
-  const PORT = Number(process.env['PORT'] || cliPort || 5000);
 
   app.set('trust proxy', 1);
   app.use((req, res, next) => {
@@ -4549,8 +4514,8 @@ async function startServer() {
   });
 
   app.get('/api/integrations/gmail/callback', async (req, res) => {
-    // Google redirects here on the API host (Render). State must not be truncated —
-    // it carries brandId + absolute Vercel return URL and is often 250–400+ chars.
+    // Google redirects here on the API host. State must not be truncated —
+    // it carries brandId + absolute frontend return URL and is often 250–400+ chars.
     const stateRaw = String(req.query.state || '').trim().slice(0, 8000);
     let returnHint = peekGmailStateReturnTo(stateRaw);
     try {
@@ -4861,12 +4826,12 @@ async function startServer() {
     const config = getMicrosoftOAuthConfig(req);
     if (!config.clientId || !config.clientSecret) {
       res.status(400).json({
-        detail: 'Microsoft OAuth is not configured. Add MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET in Render.',
+        detail: 'Microsoft OAuth is not configured. Add MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET to the server environment.',
         redirect_uri: config.redirectUri,
       });
       return;
     }
-    // Same pattern as Gmail: signed state carries absolute Vercel return_to (survives multi-instance Render).
+    // Same pattern as Gmail: signed state carries the frontend return_to.
     const returnTo = extractReturnTo(req);
     const state = createMailboxOAuthState(brandId, req.user!.id, returnTo, 'outlook');
     const params = new URLSearchParams({
@@ -4890,9 +4855,9 @@ async function startServer() {
 
   app.post('/api/oauth/yahoo/start/:brand_id', requireAdmin, (_req, res) => {
     // Yahoo Mail has no production browser OAuth path in this CRM yet — connect via SMTP/IMAP app password
-    // under Integrations (same as custom SMTP). No Render→Vercel redirect applies until OAuth ships.
+    // under Integrations (same as custom SMTP). No cross-host redirect is needed until OAuth ships.
     res.status(501).json({
-      detail: 'Yahoo does not use browser OAuth here yet. Connect Yahoo under Integrations with SMTP/IMAP (app password). Gmail, Outlook/Microsoft, and Social Hub OAuth already bounce back to the Vercel app after the API callback.',
+      detail: 'Yahoo does not use browser OAuth here yet. Connect Yahoo under Integrations with SMTP/IMAP (app password). Gmail, Outlook/Microsoft, and Social Hub OAuth return to the configured frontend after the API callback.',
       provider: 'yahoo',
       status: 'smtp_imap_only',
       connect_via: 'integrations_smtp',
@@ -4900,8 +4865,8 @@ async function startServer() {
   });
 
   app.get('/api/integrations/outlook/callback', async (req, res) => {
-    // Microsoft redirects here on the API host (Render). State must not be truncated —
-    // it carries brandId + absolute Vercel return URL (same fix as Gmail).
+    // Microsoft redirects here on the API host. State must not be truncated —
+    // it carries brandId + absolute frontend return URL.
     const stateRaw = String(req.query.state || '').trim().slice(0, 8000);
     let returnHint = peekMailboxOAuthStateReturnTo(stateRaw);
     try {
@@ -5167,7 +5132,7 @@ async function startServer() {
       if (!hasVerifyToken) missing.push('Webhook Verify Token');
     }
 
-    // Webhooks must hit the API host (Render), not the Vercel SPA origin in PUBLIC_CRM_URL.
+    // Webhooks must hit the API host, not a separately hosted frontend origin.
     const apiBase = getApiBaseUrl(req);
 
     res.json({
@@ -6787,7 +6752,17 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     app.get('*', (_req, res) => { res.sendFile(path.join(distPath, 'index.html')); });
   }
 
-  app.listen(PORT, '0.0.0.0', () => { console.log(`Server running on http://0.0.0.0:${PORT}`); });
+  return app;
 }
 
-startServer().catch(err => { console.error('Failed to start server:', err); });
+async function startServer() {
+  const app = await createApp();
+  const portFlagIndex = process.argv.indexOf('--port');
+  const cliPort = portFlagIndex >= 0 ? process.argv[portFlagIndex + 1] : undefined;
+  const port = Number(process.env['PORT'] || cliPort || 5000);
+  app.listen(port, '0.0.0.0', () => { console.log(`Server running on http://0.0.0.0:${port}`); });
+}
+
+if (process.env.START_SERVER !== 'false') {
+  startServer().catch(err => { console.error('Failed to start server:', err); });
+}

@@ -462,7 +462,7 @@ export default function App() {
       setSelectedBrand(null);
       setActiveTab('social-hub');
     }
-    // OAuth bounce-back from Render API callback (Gmail / Outlook / Social).
+    // OAuth bounce-back from the configured API callback (Gmail / Outlook / Social).
     if (params.get('gmail') === 'success') {
       showToast('Gmail connected. Opening mailbox and syncing…');
       setActiveTab('email-tracking');
@@ -4435,7 +4435,7 @@ export default function App() {
     setGmailConnecting(true);
     try {
       await axios.put(`/api/brand-integrations/${integrationBrandId}`, { ...integrationForm, email_provider: 'gmail' });
-      // Absolute UI origin so Render OAuth callback can bounce back to Vercel (not stay on the API host).
+      // Absolute UI origin so a split-host API callback can return to the frontend.
       const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search || ''}`;
       const res = await axios.post(`/api/integrations/gmail/start/${integrationBrandId}`, { return_to: returnTo });
       if (res.data?.auth_url) {
@@ -4457,7 +4457,7 @@ export default function App() {
     setGmailConnecting(true);
     try {
       await axios.put(`/api/brand-integrations/${integrationBrandId}`, { ...integrationForm, email_provider: 'outlook' });
-      // Absolute UI origin so Render OAuth callback can bounce back to Vercel (same pattern as Gmail).
+      // Absolute UI origin so a split-host API callback can return to the frontend.
       const returnTo = `${window.location.origin}${window.location.pathname}${window.location.search || ''}`;
       const res = await axios.post(`/api/integrations/outlook/start/${integrationBrandId}`, { return_to: returnTo });
       if (res.data?.auth_url) {

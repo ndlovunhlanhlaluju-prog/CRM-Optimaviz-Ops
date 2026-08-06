@@ -11,7 +11,7 @@ Use this first.
 - Users only add their public WhatsApp number in Setup.
 - Lujunal opens WhatsApp Web or the phone app with the message prepared.
 - The CRM logs the message against the lead.
-- No Meta approval, backend key, or Render access is needed.
+- No Meta approval or platform-specific backend access is needed.
 
 ### WhatsApp Cloud API
 
@@ -19,7 +19,7 @@ Use this when you want messages sent directly from the CRM.
 
 - Each sending number needs a Meta Phone Number ID.
 - The access token must stay server-side.
-- Users should not add tokens in Render.
+- Users should add provider tokens to the server environment for the selected hosting platform.
 - Owner/admin can wire a brand to a server env var name and check setup from the CRM.
 
 If one business has multiple WhatsApp numbers, each number usually has its own Phone Number ID under a WhatsApp Business Account.
