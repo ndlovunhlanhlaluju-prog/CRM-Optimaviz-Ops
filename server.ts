@@ -3153,7 +3153,7 @@ export async function createApp() {
 
   // â”€â”€â”€ Sequence step scheduler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Checks every minute whether a scheduled next-step email is due.
-  setInterval(async () => {
+  if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') setInterval(async () => {
     const now = new Date();
     let dirty = false;
 
@@ -5327,7 +5327,9 @@ export async function createApp() {
     hasBrandAccess,
   };
   registerSocialHubRoutes(app, socialHubRouteContext);
-  startSocialPostScheduler(socialHubRouteContext);
+  if (process.env.ENABLE_BACKGROUND_JOBS !== 'false') {
+    startSocialPostScheduler(socialHubRouteContext);
+  }
 
   app.get('/api/intelligence/portfolio-opportunities', requireAuth, (_req, res) => {
     const rules = db.get().portfolio_opportunity_rules || [];

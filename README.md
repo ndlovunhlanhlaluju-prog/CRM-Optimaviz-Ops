@@ -18,5 +18,6 @@ A standalone multi-brand CRM containing its React frontend, Express backend, aut
 - `npm start` runs the complete production application.
 - `GET /api/health` verifies that the standalone backend is available.
 - The app has no required hosting-provider dependency or hardcoded production URL.
+- Vercel deployments use `api/[...path].ts` as a thin adapter around the same Express application; the API is not a separate service.
 
 See [STANDALONE_ARCHITECTURE.md](./STANDALONE_ARCHITECTURE.md) for deployment and persistence details.

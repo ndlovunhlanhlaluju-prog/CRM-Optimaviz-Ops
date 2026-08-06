@@ -22,6 +22,7 @@ There is no separate SaaS platform backend and no required hosting-provider conf
 - `npm start` runs the production server. The same process serves both the API and the React build.
 - `GET /api/health` reports the standalone runtime status.
 - `createApp()` is exported from `server.ts` for hosts that provide their own Node/HTTP adapter.
+- Vercel can use the included `api/[...path].ts` adapter to run the same API routes as serverless functions; no second backend service is required.
 
 A deployment must use the Node server entry point (`npm start`). Static-only hosting is not supported because it would omit the backend and authentication API. Platforms that only run short-lived serverless functions also require a durable external database instead of the local JSON file.
 
