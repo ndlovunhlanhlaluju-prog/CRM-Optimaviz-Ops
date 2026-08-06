@@ -308,11 +308,13 @@ export default function App() {
     safeLocalStorage.setItem('crm_sidebar_style', sidebarStyle);
   }, [sidebarStyle]);
 
+  const loginSuccessRef = { current: false };
+
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
       error => {
-        if (error?.response?.status === 401) {
+        if (error?.response?.status === 401 && !loginSuccessRef.current) {
           setUser(null);
           safeLocalStorage.removeItem('optima_user');
           clearSessionToken();
