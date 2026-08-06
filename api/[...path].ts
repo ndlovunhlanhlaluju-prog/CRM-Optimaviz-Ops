@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   process.env.ENABLE_BACKGROUND_JOBS = 'false';
 
   if (!appPromise) {
-    appPromise = import('../server').then(({ createApp }) => createApp());
+    appPromise = import('../server.ts').then(({ createApp }) => createApp());
   }
 
   const app = await appPromise;
