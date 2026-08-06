@@ -1366,13 +1366,14 @@ export class LocalDb {
       } else {
         const keepPath = path.join(BACKUP_DIR, `db-richer-kept-${new Date().toISOString().slice(0, 10)}.json`);
         if (!fs.existsSync(keepPath)) this.writeJsonFileSafe(keepPath, existingLatest);
-        console.warn(
-          `Skipped overwriting backups/db-latest.json with poorer snapshot (incoming=${schemaRichness(data)}, existing=${schemaRichness(existingLatest)}).`,
+        console.log(
+          `Kept richer local backup (incoming=${schemaRichness(data)}, existing=${schemaRichness(existingLatest)}).`,
         );
       }
       const stamp = new Date().toISOString().slice(0, 10);
       const dailyPath = path.join(BACKUP_DIR, `db-${stamp}.json`);
       const existingDaily = tryReadSchemaFile(dailyPath);
+
       if (!existingDaily || schemaRichness(data) >= schemaRichness(existingDaily)) {
         this.writeJsonFileSafe(dailyPath, data);
       }

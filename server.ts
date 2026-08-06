@@ -2427,18 +2427,16 @@ async function startServer() {
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     next();
-
   });
 
-  // Cross-origin SPA hosts (e.g. Vercel UI â†’ this API). Comma-separated absolute origins.
-  // Example: CORS_ORIGINS=https://crm-optima-updated.vercel.app,http://localhost:5173
+  // Optional origins for public forms or tools that call this standalone API.
   const corsOrigins = new Set(
     String(process.env.CORS_ORIGINS || '')
       .split(',')
       .map(value => value.trim().replace(/\/$/, ''))
+
       .filter(Boolean)
   );
   app.use((req, res, next) => {
