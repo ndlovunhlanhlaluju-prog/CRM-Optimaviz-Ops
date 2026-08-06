@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   process.env['ENABLE_BACKGROUND_JOBS'] = 'false';
 
   if (!appPromise) {
-    appPromise = import('../dist/server.cjs').then((mod: any) => {
+    appPromise = import('../../dist/server.cjs').then((mod: any) => {
       const createApp = mod.createApp || mod.default?.createApp;
       if (!createApp) {
         throw new Error('createApp not found in server bundle');
