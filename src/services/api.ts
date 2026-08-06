@@ -1,17 +1,13 @@
 import axios from 'axios';
 
 /**
- * Architecture B: the operational CRM UI (main) can call the SaaS backend API.
- * Set VITE_API_BASE_URL=https://crm-optima-saas.onrender.com at build time on Render.
- * When unset, requests stay same-origin (local full-stack dev on main).
+ * The standalone frontend and backend are served by the same process.
+ * Keeping API requests relative ensures the browser always uses the bundled backend.
  */
-const rawBase = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
-export const API_BASE_URL = (rawBase || '').replace(/\/$/, '');
+export const API_BASE_URL = '';
 
 axios.defaults.withCredentials = true;
-if (API_BASE_URL) {
-  axios.defaults.baseURL = API_BASE_URL;
-}
+axios.defaults.baseURL = undefined;
 
 export const SESSION_TOKEN_KEY = 'optima_session_token';
 
@@ -42,11 +38,12 @@ export function clearSessionToken() {
   setSessionToken('');
 }
 
-// Restore bearer token on cold load (cross-origin cookie may be blocked)
+// Restore the bearer token on cold load as a complement to the session cookie.
 const existing = getStoredSessionToken();
 if (existing) {
   axios.defaults.headers.common.Authorization = `Bearer ${existing}`;
 }
 
 export const api = axios;
+
 export default axios;

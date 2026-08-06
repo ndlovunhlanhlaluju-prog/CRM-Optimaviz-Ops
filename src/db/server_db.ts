@@ -657,33 +657,17 @@ export interface Schema {
   audit_log: AuditEntry[];
 }
 
-/**
- * Product-scoped storage so ops CRM (main) and customer SaaS (saas-platform)
- * never overwrite each other's live database when sharing one working tree.
- *
- * Override with CRM_PRODUCT=ops|saas and optional CRM_DB_FILE / CRM_BACKUP_DIR.
- */
-function resolveCrmProduct(): 'ops' | 'saas' {
-  const explicit = String(process.env.CRM_PRODUCT || '').toLowerCase().trim();
-  if (explicit === 'saas' || explicit === 'saas-platform' || explicit === 'lujunal') return 'saas';
-  if (explicit === 'ops' || explicit === 'main' || explicit === 'operational' || explicit === 'optima') return 'ops';
-  const record = String(process.env.SUPABASE_RECORD_ID || 'main').toLowerCase();
-  if (record.includes('saas')) return 'saas';
-  // Default for the operational CRM branch (main). saas-platform overrides via CRM_PRODUCT or record id.
-  return 'ops';
-}
-
-const CRM_PRODUCT = resolveCrmProduct();
+/** Standalone local persistence paths. */
 const DB_PATH = path.join(
   process.cwd(),
-  process.env.CRM_DB_FILE || (CRM_PRODUCT === 'saas' ? 'db-saas.json' : 'db.json'),
+  process.env['CRM_DB_FILE'] || 'db.json',
 );
 const BACKUP_DIR = path.join(
   process.cwd(),
-  process.env.CRM_BACKUP_DIR || path.join('backups', CRM_PRODUCT),
+  process.env['CRM_BACKUP_DIR'] || path.join('backups', 'ops'),
 );
 
-console.log(`[CRM DB] product=${CRM_PRODUCT} file=${DB_PATH} backups=${BACKUP_DIR}`);
+console.log(`[CRM DB] standalone file=${DB_PATH} backups=${BACKUP_DIR}`);
 
 /** Prefer richer CRM snapshots so empty seed/cloud never silently replaces real data. */
 function schemaRichness(data: Partial<Schema> | null | undefined): number {
@@ -1346,12 +1330,9 @@ export class LocalDb {
         }
       }
 
+      // Standalone mode keeps the bundled local database authoritative.
       this.writeJsonFileSafe(DB_PATH, data);
       this.writeTimestampedBackup(data);
-      this.pushToSupabase(data).catch(err => {
-        this.lastSupabaseError = err instanceof Error ? err.message : String(err);
-        console.error('Supabase backup sync failed:', this.lastSupabaseError);
-      });
     } catch (err) {
       console.error('Error saving database:', err);
     }

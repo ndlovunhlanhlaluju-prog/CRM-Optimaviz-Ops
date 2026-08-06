@@ -1,20 +1,12 @@
-﻿# Git model — CRM Optima Ops
+# Git model — CRM Optimaviz Ops
 
-This is a **single-product** repository (internal ops UI).
+This is a single-product, standalone full-stack repository.
 
 | Branch | Use |
-|--------|-----|
-| `main` | Default / production source for the ops host |
-| short-lived feature branches | Fixes and UI work; delete after merge |
+|---|---|
+| `main` | Default production source for the complete frontend and backend |
+| short-lived feature branches | Isolated fixes and product work |
 
-## Related product
+Backend API changes, frontend changes, and database-model changes all belong in this repository. There is no separate SaaS-platform branch or backend repository dependency.
 
-Backend and customer SaaS live in **CRM-Optima-SaaS** (separate folder/repo).
-
-- Do **not** recreate a long-lived `saas-platform` branch here.
-- Shared API behaviour belongs in the SaaS repo; ops only needs client changes and `VITE_API_BASE_URL`.
-
-## Data
-
-- Production CRM truth is the SaaS database (internal workspace `workspace-optima-internal`).
-- Local `db.json` / backups are dev/safety only — do not commit live data.
+`db.json` and `backups/ops/` are the standalone persistence layer. Production deployments must mount persistent storage for these paths and should not commit live customer data.

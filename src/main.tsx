@@ -1,6 +1,6 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-// Architecture B: configure API base URL + bearer session before any page loads.
+// Configure same-origin API credentials before any page loads.
 import './services/api';
 import App from './App.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary';

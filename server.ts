@@ -2417,26 +2417,11 @@ function findLeadByWhatsAppPhone(db: LocalDb, brandId: string, phone: string): D
   });
 }
 
-async function initializePrimaryDbWithTimeout(db: LocalDb) {
-  const timeoutMs = Math.max(1000, Number(process.env.SUPABASE_STARTUP_TIMEOUT_MS || 5000));
-  let timedOut = false;
-  const timeout = new Promise<void>(resolve => {
-    setTimeout(() => {
-      timedOut = true;
-      console.warn(`Supabase startup read exceeded ${timeoutMs}ms. Serving from db.json fallback while cloud sync continues.`);
-      resolve();
-    }, timeoutMs);
-  });
-  const init = db.initSupabasePrimary().catch(err => {
-    console.error('Supabase startup read failed. Serving from db.json fallback:', err instanceof Error ? err.message : err);
-  });
-  await Promise.race([init, timeout]);
-  if (timedOut) init.catch(() => undefined);
-}
-
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT || 5000);
+  const portFlagIndex = process.argv.indexOf('--port');
+  const cliPort = portFlagIndex >= 0 ? process.argv[portFlagIndex + 1] : undefined;
+  const PORT = Number(process.env['PORT'] || cliPort || 5000);
 
   app.set('trust proxy', 1);
   app.use((req, res, next) => {
@@ -2445,6 +2430,7 @@ async function startServer() {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     next();
+
   });
 
   // Cross-origin SPA hosts (e.g. Vercel UI â†’ this API). Comma-separated absolute origins.
@@ -2494,8 +2480,16 @@ async function startServer() {
   app.use('/api/public', rateLimit('public', 60 * 1000, 120));
 
   const db = new LocalDb();
-  await initializePrimaryDbWithTimeout(db);
   ensureLegacyEmailConnections(db);
+
+  app.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      architecture: 'standalone',
+      database: 'local',
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   // Migration: classify all existing leads as 'verified'
   try {
@@ -2504,6 +2498,7 @@ async function startServer() {
     if (schema && schema.leads) {
       const existingMigrations: string[] = schema._migrations || [];
       if (!existingMigrations.includes(migrationKey)) {
+
         const now = new Date().toISOString();
         let migratedCount = 0;
         for (const lead of schema.leads) {
@@ -2787,17 +2782,17 @@ async function startServer() {
   };
 
 
-  // â”€â”€â”€ Database / Supabase status and migration helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ Standalone database status and maintenance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   app.get('/api/admin/database/status', requireAdmin, (_req, res) => {
-    const status = db.getSupabaseStatus();
     res.json({
-      mode: status.configured && !status.using_fallback ? 'supabase_primary' : 'db_json_fallback',
-      supabase: status,
-      local_backup: { enabled: true, files: ['db.json', 'backups/db-latest.json', 'backups/db-YYYY-MM-DD.json'] },
+      mode: 'standalone_local',
+      database: { file: process.env['CRM_DB_FILE'] || 'db.json', persistent: true },
+      local_backup: { enabled: true, directory: process.env['CRM_BACKUP_DIR'] || 'backups/ops' },
       counts: {
         leads: db.get().leads.length,
         taskgo_leads: db.get().leads.filter(l => l.brand_id === 'taskgo').length,
         idao_leads: db.get().leads.filter(l => l.brand_id === 'idao').length,
+
         optimaviz_leads: db.get().leads.filter(l => l.brand_id === 'optimaviz').length,
         emails: db.get().emails.length,
         notes: db.get().notes.length,
@@ -2810,22 +2805,13 @@ async function startServer() {
     res.json({ success: true, ...result });
   });
 
-  app.post('/api/admin/database/sync-supabase', requireAdmin, async (_req, res) => {
-    try {
-      await db.forcePushToSupabase();
-      res.json({ success: true, supabase: db.getSupabaseStatus() });
-    } catch (err) {
-      console.error('Supabase manual sync failed:', err);
-      res.status(500).json({ success: false, detail: 'Database sync could not be completed right now.', supabase: db.getSupabaseStatus() });
-    }
-  });
-
   app.post('/api/admin/database/wipe-ops-data', requireAdmin, (_req, res) => {
     try {
       db.wipeOpsDataButPreserveBrandProfiles();
       res.json({ success: true, message: 'Operations CRM data wiped. Brand profiles and setup were preserved.' });
     } catch (err) {
       console.error('Operational data wipe failed:', err);
+
       res.status(500).json({ success: false, detail: 'The CRM wipe could not be completed right now.' });
     }
   });
@@ -3312,9 +3298,9 @@ async function startServer() {
     user!.presence_status = 'online';
     user!.presence_updated_at = new Date().toISOString();
     db.save();
-    // 30-day sessions (match SaaS) â€” stop daily lockouts feeling like broken credentials.
+    // Keep users signed in for 30 days unless they explicitly log out.
     res.setHeader('Set-Cookie', sessionCookieHeader(req, sessionToken, 30 * 24 * 60 * 60));
-    // session_token for Architecture B Bearer auth (ops UI â†’ API host).
+    // The bearer token complements the same-origin session cookie.
     res.json({ ...publicUser(user!), session_token: sessionToken });
   });
 
@@ -3322,6 +3308,7 @@ async function startServer() {
     res.setHeader('Set-Cookie', sessionCookieHeader(req, '', 0));
     const user = getSessionUser(req);
     if (user) {
+
       clearSession(user);
       updateUserPresence(user.id, 'offline');
       db.save();

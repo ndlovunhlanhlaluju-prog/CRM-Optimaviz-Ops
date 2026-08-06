@@ -242,7 +242,7 @@ import type {
   BrandWorkspaceProfile
 } from './config/crmConfig';
 
-// Credentials + optional VITE_API_BASE_URL are configured in ./services/api
+// API calls stay same-origin and are handled by the bundled standalone server.
 axios.defaults.withCredentials = true;
 
 export default function App() {
