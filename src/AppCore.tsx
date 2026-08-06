@@ -2662,8 +2662,14 @@ export default function App() {
       fetchMessageTemplates();
       fetchTeamMessages();
       fetchTeamNotes();
-    } catch {
-      setUser(null);
+    } catch (err: any) {
+      // Only clear the user on an explicit auth rejection. The global response
+      // interceptor already handles AUTH_REQUIRED 401s. For network errors or
+      // transient server failures we leave any existing user state untouched so
+      // a logged-in user is not logged out by a momentary connectivity blip.
+      if (err?.response?.data?.code === 'AUTH_REQUIRED') {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -4335,6 +4341,10 @@ export default function App() {
   }, [integrationBrandId, brandIntegrations, managedBrands]);
 
   useEffect(() => {
+    // Guard: never fire authenticated fetches before the user is established.
+    // Without this, in-flight 401 responses from initial mount can race with
+    // a successful login and trigger the global interceptor to clear the session.
+    if (!user) return;
     if (activeIntegrationChannel === 'email') {
       fetchGmailStatus(integrationBrandId);
       fetchOutlookStatus(integrationBrandId);
@@ -4350,13 +4360,14 @@ export default function App() {
     if (activeIntegrationChannel === 'traffic') {
       fetchWebsiteAnalytics(integrationBrandId);
     }
-  }, [activeIntegrationChannel, integrationBrandId]);
+  }, [user?.id, activeIntegrationChannel, integrationBrandId]);
 
   useEffect(() => {
+    if (!user) return;
     if (activeTab === 'email-tracking' && selectedBrandForEmail?.id) {
       fetchEmailConnections(selectedBrandForEmail.id);
     }
-  }, [activeTab, selectedBrandForEmail?.id]);
+  }, [user?.id, activeTab, selectedBrandForEmail?.id]);
 
   useEffect(() => {
     if (integrationForm.email_sender_address && !gmailTestRecipient) {

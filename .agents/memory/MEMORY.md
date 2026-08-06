@@ -1,0 +1,1 @@
+- [Login race condition fix](login-race-condition.md) — unguarded effects that fire authenticated API calls on mount can race with login; always add `if (!user) return` + `user?.id` in deps.
