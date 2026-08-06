@@ -21,8 +21,8 @@ let appPromise: Promise<any> | undefined;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('[VERCEL ADAPTER] handler invoked', req.method, req.url);
-  process.env.START_SERVER = 'false';
-  process.env.ENABLE_BACKGROUND_JOBS = 'false';
+  process.env['START_SERVER'] = 'false';
+  process.env['ENABLE_BACKGROUND_JOBS'] = 'false';
 
   if (!appPromise) {
     console.log('[VERCEL ADAPTER] Creating app...');
