@@ -8522,8 +8522,8 @@ export default function App() {
   const handleDeleteUser = async (userId: string) => {
     // Caller sets confirmDeleteUserId before calling; cleared after
     try {
-      await axios.delete(`/api/auth/users/${userId}`);
-      fetchUsersList();
+      await axios.delete(`/api/users/${userId}`);
+      await fetchUsersList();
     } catch (err: any) {
       alert(toUserFacingError(err, 'Delete user failed.'), 'error');
     }

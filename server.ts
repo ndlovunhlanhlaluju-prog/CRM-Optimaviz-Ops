@@ -6660,7 +6660,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     res.json({ success: true });
   });
 
-  app.delete('/api/auth/users/:user_id', requireAdmin, async (req, res) => {
+  const deleteManagedUser = async (req: express.Request, res: express.Response) => {
     const { user_id } = req.params;
     const target = db.get().users.find(u => u.id === user_id);
     if (!target || isProtectedOwnerUser(target)) { res.status(404).json({ detail: 'User not found' }); return; }
@@ -6673,7 +6673,10 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     auditSecurityEvent(req, 'user_delete', { target_user_id: user_id });
     await db.save();
     res.json({ success: true });
-  });
+  };
+
+  app.delete('/api/users/:user_id', requireAdmin, deleteManagedUser);
+  app.delete('/api/auth/users/:user_id', requireAdmin, deleteManagedUser);
 
   app.post('/api/auth/users/:user_id/change-password', requireAdmin, (req, res) => {
     const { user_id } = req.params;
