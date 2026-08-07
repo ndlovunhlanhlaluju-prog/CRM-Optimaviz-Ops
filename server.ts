@@ -2582,7 +2582,24 @@ export async function createApp() {
 
   const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const user = getSessionUser(req);
-    if (!user || !isAdminUser(user)) { res.status(403).json({ detail: 'Admin role required.' }); return; }
+    if (!user) { res.status(401).json({ detail: 'Authentication required', code: 'AUTH_REQUIRED' }); return; }
+
+    const email = normalizeAccountEmail(user.email);
+    const isProtectedSuperAdmin = email === DEFAULT_SUPERADMIN_EMAIL || protectedOwnerEmails.has(email);
+    if (isProtectedSuperAdmin && !LEGACY_OWNER_EMAILS.has(email)) {
+      let repaired = false;
+      if (user.role !== 'admin') { user.role = 'admin'; repaired = true; }
+      if (user.platform_role !== 'superadmin') { user.platform_role = 'superadmin'; repaired = true; }
+      if (repaired) void db.save();
+      req.user = user;
+      next();
+      return;
+    }
+
+    if (String(user.role || '').toLowerCase() !== 'admin') {
+      res.status(403).json({ detail: 'Admin role required.' });
+      return;
+    }
     req.user = user;
     next();
   };
