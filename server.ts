@@ -2547,13 +2547,6 @@ export async function createApp() {
     'mthokozisigatsheni89@gamil.com', // common typo from earlier setup
   ]);
 
-  const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const user = getSessionUser(req);
-    if (!user || !isAdminUser(user)) { res.status(403).json({ detail: 'Admin role required.' }); return; }
-    req.user = user;
-    next();
-  };
-
   const publicUser = (user: DbUser) => {
     const { password: _, session_token: __, session_expires_at: ___, ...safeUser } = user;
     return {
@@ -2563,31 +2556,36 @@ export async function createApp() {
     };
   };
 
+  const normalizeAccountEmail = (email: unknown) => sanitizeString(String(email || ''), 254).toLowerCase().trim();
   const protectedOwnerEmails = new Set(
     (process.env.PLATFORM_OWNER_EMAILS || DEFAULT_SUPERADMIN_EMAIL)
       .split(',')
-      .map(email => sanitizeString(email, 254).toLowerCase())
+      .map(normalizeAccountEmail)
       .filter(email => Boolean(email) && !LEGACY_OWNER_EMAILS.has(email))
   );
   // Always ensure the default Optimaviz superadmin email is protected.
   protectedOwnerEmails.add(DEFAULT_SUPERADMIN_EMAIL);
 
   const SUPERADMIN_ROLES = new Set(['superadmin', 'owner']); // 'owner' kept for backward-compat data
-  const isProtectedOwnerUser = (user?: DbUser | null) => Boolean(
-    user
-    && (
-      SUPERADMIN_ROLES.has(String(user.platform_role || ''))
-      || protectedOwnerEmails.has(String(user.email || '').toLowerCase())
-    )
-    && !LEGACY_OWNER_EMAILS.has(String(user.email || '').toLowerCase())
-  );
+  const isProtectedOwnerUser = (user?: DbUser | null) => {
+    if (!user) return false;
+    const email = normalizeAccountEmail(user.email);
+    return !LEGACY_OWNER_EMAILS.has(email)
+      && (SUPERADMIN_ROLES.has(String(user.platform_role || '').toLowerCase()) || protectedOwnerEmails.has(email));
+  };
   const isAdminUser = (user?: DbUser | null) => Boolean(
     user && (
-      user.role === 'admin'
-      || SUPERADMIN_ROLES.has(String(user.platform_role || ''))
-      || protectedOwnerEmails.has(String(user.email || '').toLowerCase())
+      String(user.role || '').toLowerCase() === 'admin'
+      || isProtectedOwnerUser(user)
     )
   );
+
+  const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const user = getSessionUser(req);
+    if (!user || !isAdminUser(user)) { res.status(403).json({ detail: 'Admin role required.' }); return; }
+    req.user = user;
+    next();
+  };
 
   const ensureProtectedOwnerAccounts = () => {
     let dirty = false;
