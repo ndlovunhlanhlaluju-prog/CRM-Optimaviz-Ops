@@ -1549,6 +1549,7 @@ export class LocalDb {
 
   public save() {
     this.saveData(this.data);
+    this.pushToSupabase(this.data).catch(() => {});
   }
 
   public wipeOpsDataButPreserveBrandProfiles() {
