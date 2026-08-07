@@ -6478,7 +6478,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
   });
 
   // â”€â”€â”€ Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  app.get('/api/users', requireAuth, (req, res) => {
+  app.get('/api/users', requireAdmin, (req, res) => {
     res.json(db.get().users.filter(user => !isProtectedOwnerUser(user)).map(publicUser));
   });
 
