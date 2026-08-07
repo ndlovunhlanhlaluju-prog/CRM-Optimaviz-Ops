@@ -1418,10 +1418,13 @@ export class LocalDb {
       );
       return;
     }
+    const hasActiveSessions = (data.users || []).some(
+      u => u.session_token && u.session_expires_at && new Date(u.session_expires_at).getTime() > Date.now(),
+    );
     sanitizeSchema(data);
     this.isSyncingToSupabase = true;
     try {
-      if (!options?.force) {
+      if (!options?.force && !hasActiveSessions) {
         try {
           const probe = await fetch(this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data,updated_at`), {
             headers: this.supabaseHeaders(),
@@ -1549,7 +1552,7 @@ export class LocalDb {
 
   public save() {
     this.saveData(this.data);
-    this.pushToSupabase(this.data).catch(() => {});
+    return this.pushToSupabase(this.data).catch(() => {});
   }
 
   public wipeOpsDataButPreserveBrandProfiles() {

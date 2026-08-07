@@ -3232,7 +3232,7 @@ export async function createApp() {
     return `optima_session_id=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=${maxAgeSeconds}${secureFlag}`;
   };
 
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) { res.status(400).json({ detail: 'Email and password are required' }); return; }
     const normalizedEmail = String(email).toLowerCase().trim();
@@ -3241,7 +3241,6 @@ export async function createApp() {
       return;
     }
     let user = db.get().users.find(u => String(u.email || '').toLowerCase() === normalizedEmail);
-    // Recreate missing superadmin after wipe (parity with SaaS recovery).
     const bootstrapPassword = sanitizeString(
       process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || DEFAULT_SUPERADMIN_PASSWORD,
       200,
@@ -3263,21 +3262,18 @@ export async function createApp() {
     const sessionToken = issueSession(user!);
     user!.presence_status = 'online';
     user!.presence_updated_at = new Date().toISOString();
-    db.save();
-    // Keep users signed in for 30 days unless they explicitly log out.
+    await db.save();
     res.setHeader('Set-Cookie', sessionCookieHeader(req, sessionToken, 30 * 24 * 60 * 60));
-    // The bearer token complements the same-origin session cookie.
     res.json({ ...publicUser(user!), session_token: sessionToken });
   });
 
-  app.post('/api/auth/logout', (req, res) => {
+  app.post('/api/auth/logout', async (req, res) => {
     res.setHeader('Set-Cookie', sessionCookieHeader(req, '', 0));
     const user = getSessionUser(req);
     if (user) {
-
       clearSession(user);
       updateUserPresence(user.id, 'offline');
-      db.save();
+      await db.save();
     }
     res.json({ success: true });
   });
@@ -6648,7 +6644,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     res.json(publicUser(db.get().users[idx]));
   });
 
-  app.post('/api/auth/me/change-password', requireAuth, (req, res) => {
+  app.post('/api/auth/me/change-password', requireAuth, async (req, res) => {
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password) { res.status(400).json({ detail: 'Current and new password are required' }); return; }
     if (String(new_password).length < 6) { res.status(400).json({ detail: 'Password must be at least 6 characters' }); return; }
@@ -6659,24 +6655,23 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     clearSession(db.get().users[idx]);
     const sessionToken = issueSession(db.get().users[idx]);
     auditSecurityEvent(req, 'password_change_self', { target_user_id: req.user!.id });
-    db.save();
+    await db.save();
     res.setHeader('Set-Cookie', `optima_session_id=${encodeURIComponent(sessionToken)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
     res.json({ success: true });
   });
 
-  app.delete('/api/auth/users/:user_id', requireAdmin, (req, res) => {
+  app.delete('/api/auth/users/:user_id', requireAdmin, async (req, res) => {
     const { user_id } = req.params;
     const target = db.get().users.find(u => u.id === user_id);
     if (!target || isProtectedOwnerUser(target)) { res.status(404).json({ detail: 'User not found' }); return; }
     if (req.user!.id === user_id) { res.status(400).json({ detail: 'You cannot delete your own account.' }); return; }
-    // Only superadmin may delete platform admins; regular admins may delete staff only.
     if (target.role === 'admin' && !isProtectedOwnerUser(req.user)) {
       res.status(403).json({ detail: 'Only the superadmin can delete platform admins.' });
       return;
     }
     db.get().users = db.get().users.filter(u => u.id !== user_id);
     auditSecurityEvent(req, 'user_delete', { target_user_id: user_id });
-    db.save();
+    await db.save();
     res.json({ success: true });
   });
 
