@@ -2443,13 +2443,16 @@ export async function createApp() {
   app.use('/api/public', rateLimit('public', 60 * 1000, 120));
 
   const db = new LocalDb();
+  await db.initSupabasePrimary();
   ensureLegacyEmailConnections(db);
 
   app.get('/api/health', (_req, res) => {
+    const status = db.getSupabaseStatus();
     res.json({
       status: 'ok',
       architecture: 'standalone',
-      database: 'local',
+      database: status.configured ? (status.using_fallback ? 'local-fallback' : 'supabase') : 'local',
+      supabase: status.configured ? { url: status.url, last_sync_at: status.last_sync_at, using_fallback: status.using_fallback } : undefined,
       timestamp: new Date().toISOString(),
     });
   });

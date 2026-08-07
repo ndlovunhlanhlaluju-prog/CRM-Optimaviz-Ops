@@ -308,14 +308,21 @@ export default function App() {
     safeLocalStorage.setItem('crm_sidebar_style', sidebarStyle);
   }, [sidebarStyle]);
 
+  const loginSuccessRef = useRef(false);
+
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
       error => {
         if (error?.response?.status === 401 && error?.response?.data?.code === 'AUTH_REQUIRED') {
-          setUser(null);
-          safeLocalStorage.removeItem('optima_user');
-          clearSessionToken();
+          console.warn('[Auth] 401 AUTH_REQUIRED intercepted', error?.response?.data);
+          if (!loginSuccessRef.current) {
+            setUser(null);
+            safeLocalStorage.removeItem('optima_user');
+            clearSessionToken();
+          } else {
+            console.warn('[Auth] Ignoring 401 because loginSuccessRef is set');
+          }
         }
         return Promise.reject(error);
       }
@@ -345,6 +352,7 @@ export default function App() {
   }, [user]);
 
   const handleLoginSuccess = (payload: any) => {
+    loginSuccessRef.current = true;
     if (payload?.session_token) setSessionToken(payload.session_token);
     const rawUser = payload?.user && typeof payload.user === 'object' && payload.user.id ? payload.user : payload;
     const { session_token: _t, user: _u, ...safeUser } = rawUser || {};
@@ -2663,14 +2671,11 @@ export default function App() {
       fetchTeamMessages();
       fetchTeamNotes();
     } catch (err: any) {
-      // Only clear the user on an explicit auth rejection. The global response
-      // interceptor already handles AUTH_REQUIRED 401s. For network errors or
-      // transient server failures we leave any existing user state untouched so
-      // a logged-in user is not logged out by a momentary connectivity blip.
-      if (err?.response?.data?.code === 'AUTH_REQUIRED') {
+      if (err?.response?.data?.code === 'AUTH_REQUIRED' && !loginSuccessRef.current) {
         setUser(null);
       }
     } finally {
+      loginSuccessRef.current = false;
       setLoading(false);
     }
   };
@@ -7206,6 +7211,7 @@ export default function App() {
     } finally {
       clearSessionToken();
       setUser(null);
+      loginSuccessRef.current = false;
       setSelectedBrand(null);
       setActiveTab('dashboard');
     }
