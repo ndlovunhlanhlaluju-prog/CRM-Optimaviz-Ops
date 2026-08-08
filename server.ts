@@ -3313,7 +3313,9 @@ export async function createApp() {
     const sessionToken = issueSession(user!);
     user!.presence_status = 'online';
     user!.presence_updated_at = new Date().toISOString();
-    await db.save();
+    // Do not await cloud sync on login — uploading the full CRM to Supabase was
+    // making sign-in take many seconds on Vercel. Persist locally and push in background.
+    void db.save();
     res.setHeader('Set-Cookie', sessionCookieHeader(req, sessionToken, 30 * 24 * 60 * 60));
     res.json({ ...publicUser(user!), session_token: sessionToken });
   });
@@ -3324,7 +3326,7 @@ export async function createApp() {
     if (user) {
       clearSession(user);
       updateUserPresence(user.id, 'offline');
-      await db.save();
+      void db.save();
     }
     res.json({ success: true });
   });

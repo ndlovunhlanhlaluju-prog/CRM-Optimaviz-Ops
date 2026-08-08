@@ -1832,8 +1832,14 @@ export class LocalDb {
 
   /** Serialize cloud writes so concurrent warm-instance requests cannot skip a forced delete push. */
   private supabasePushChain: Promise<void> = Promise.resolve();
+  /** Coalesce routine (login/presence) cloud mirrors so they do not block the API. */
+  private cloudPushTimer: ReturnType<typeof setTimeout> | null = null;
+  private cloudPushWaiters: Array<{ resolve: () => void; reject: (err: unknown) => void }> = [];
 
-  private async pushToSupabase(data: Schema, options?: { force?: boolean }): Promise<void> {
+  private async pushToSupabase(
+    data: Schema,
+    options?: { force?: boolean; verify?: boolean; skipProbe?: boolean },
+  ): Promise<void> {
     if (!this.supabaseConfigured()) {
       if (options?.force) {
         throw new Error(
@@ -1859,77 +1865,65 @@ export class LocalDb {
         );
         return;
       }
-      const hasActiveSessions = (data.users || []).some(
-        u => u.session_token && u.session_expires_at && new Date(u.session_expires_at).getTime() > Date.now(),
-      );
-      sanitizeSchema(data);
-      applyAllUserTombstones(data);
+      // Work on a shallow clone of security-critical arrays so we don't stall callers.
+      const payload: Schema = data;
+      sanitizeSchema(payload);
+      applyUserTombstones(payload);
 
       // Snapshot roster before probe so force deletes cannot be re-hydrated from remote.
       const forceRoster = options?.force
         ? {
-            users: [...(data.users || [])],
-            deleted_users: mergeDeletedUsers(data.deleted_users),
+            users: [...(payload.users || [])],
+            deleted_users: mergeDeletedUsers(payload.deleted_users),
           }
         : null;
 
-      // Probe remote so we never drop cloud-only user tombstones on upsert.
-      try {
-        const probe = await fetch(this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data,updated_at`), {
-          headers: this.supabaseHeaders(),
-        });
-        if (probe.ok) {
-          const rows = await probe.json() as Array<{ data?: Partial<Schema> }>;
-          if (rows[0]?.data) {
-            const remoteSchema = safeSchema(rows[0].data);
-            data.deleted_users = mergeDeletedUsers(
-              data.deleted_users,
-              remoteSchema.deleted_users,
-              readDeletedUsersSidecar(),
-              forceRoster?.deleted_users,
-            );
-            if (options?.force && forceRoster) {
-              // Critical path (user delete): local roster + unioned tombstones win.
-              // Never reintroduce remote users that we just removed.
-              data.users = mergeUserRosters(forceRoster.users, [], data.deleted_users, {
-                allowSecondaryAdds: false,
-              });
-            } else if (remoteSchema.deleted_users?.length || remoteSchema.users?.length) {
-              data.users = mergeUserRosters(data.users, remoteSchema.users, data.deleted_users, {
-                allowSecondaryAdds: false,
-              });
-            }
-            applyUserTombstones(data);
-            if (!options?.force && !hasActiveSessions) {
-              const remoteScore = schemaRichness(remoteSchema);
-              const localScore = schemaRichness(data);
-              if (remoteScore > localScore * 1.15 && (remoteSchema.leads?.length || 0) >= 20) {
-                console.warn(`[CRM DB] Refusing Supabase push: remote richer (remote=${remoteScore}, local=${localScore}).`);
-                return;
+      // Routine saves skip the remote probe (login/presence) — one round-trip instead of two.
+      // Forced user-delete still probes to union cloud tombstones.
+      const shouldProbe = options?.force && !options?.skipProbe;
+      if (shouldProbe) {
+        try {
+          const probe = await fetch(this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data,updated_at`), {
+            headers: this.supabaseHeaders(),
+          });
+          if (probe.ok) {
+            const rows = await probe.json() as Array<{ data?: Partial<Schema> }>;
+            if (rows[0]?.data) {
+              const remoteSchema = safeSchema(rows[0].data);
+              payload.deleted_users = mergeDeletedUsers(
+                payload.deleted_users,
+                remoteSchema.deleted_users,
+                readDeletedUsersSidecar(),
+                forceRoster?.deleted_users,
+              );
+              if (forceRoster) {
+                payload.users = mergeUserRosters(forceRoster.users, [], payload.deleted_users, {
+                  allowSecondaryAdds: false,
+                });
               }
+              applyUserTombstones(payload);
             }
+          } else if (options?.force) {
+            const text = await probe.text();
+            throw new Error(`Supabase probe failed before forced push (${probe.status}): ${text}`);
           }
-        } else if (options?.force) {
-          const text = await probe.text();
-          throw new Error(`Supabase probe failed before forced push (${probe.status}): ${text}`);
+        } catch (err) {
+          if (options?.force) throw err;
         }
-      } catch (err) {
-        if (options?.force) throw err;
-        /* non-force: proceed with local tombstones only */
       }
 
       const response = await fetch(this.getSupabaseEndpoint(), {
         method: 'POST',
         headers: this.supabaseHeaders({ Prefer: 'resolution=merge-duplicates' }),
-        body: JSON.stringify({ id: SUPABASE_RECORD_ID, data, updated_at: new Date().toISOString() }),
+        body: JSON.stringify({ id: SUPABASE_RECORD_ID, data: payload, updated_at: new Date().toISOString() }),
       });
       if (!response.ok) {
         const text = await response.text();
         throw new Error(`Supabase upsert failed (${response.status}): ${text}`);
       }
 
-      // Verify force deletes actually stuck in cloud (RLS/wrong key can look like success otherwise).
-      if (options?.force && forceRoster?.deleted_users?.length) {
+      // Verify only on explicit user-delete critical saves (not every force push).
+      if (options?.force && options?.verify && forceRoster?.deleted_users?.length) {
         const verify = await fetch(
           this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data`),
           { headers: this.supabaseHeaders() },
@@ -1962,10 +1956,9 @@ export class LocalDb {
 
       this.lastSupabaseSyncAt = new Date().toISOString();
       this.lastSupabaseError = undefined;
-      // Keep in-memory data aligned with what we just forced to cloud.
       if (options?.force) {
-        this.data.users = data.users;
-        this.data.deleted_users = data.deleted_users;
+        this.data.users = payload.users;
+        this.data.deleted_users = payload.deleted_users;
       }
     } catch (err) {
       this.lastSupabaseError = err instanceof Error ? err.message : String(err);
@@ -1974,6 +1967,26 @@ export class LocalDb {
       this.isSyncingToSupabase = false;
       release();
     }
+  }
+
+  /** Background cloud mirror for routine saves (login, presence, notes). Does not block the API. */
+  private scheduleCloudPush(): Promise<void> {
+    if (!this.supabaseConfigured()) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+      this.cloudPushWaiters.push({ resolve, reject });
+      if (this.cloudPushTimer) clearTimeout(this.cloudPushTimer);
+      // Coalesce bursts of saves (login + presence + boots) into one upload.
+      this.cloudPushTimer = setTimeout(() => {
+        this.cloudPushTimer = null;
+        const waiters = this.cloudPushWaiters.splice(0, this.cloudPushWaiters.length);
+        this.pushToSupabase(this.data, { skipProbe: true })
+          .then(() => waiters.forEach(w => w.resolve()))
+          .catch((err) => {
+            console.error('Background Supabase push failed:', err);
+            waiters.forEach(w => w.resolve()); // never fail routine callers
+          });
+      }, isServerlessHost() ? 50 : 400);
+    });
   }
 
   public async initSupabasePrimary() {
@@ -2066,9 +2079,12 @@ export class LocalDb {
           applyAllUserTombstones(this.data);
           this.ensureIdaoColumnCleanup();
           this.lastSupabaseSyncAt = rows[0].updated_at || new Date().toISOString();
-          this.writeJsonFileSafe(DB_PATH, this.data);
-          writeDeletedUsersSidecar(this.data.deleted_users);
-          this.writeTimestampedBackup(this.data, { force: true });
+          // Avoid expensive disk backup work on Vercel cold starts (ephemeral FS).
+          if (!isServerlessHost()) {
+            this.writeJsonFileSafe(DB_PATH, this.data);
+            writeDeletedUsersSidecar(this.data.deleted_users);
+            this.writeTimestampedBackup(this.data, { force: true });
+          }
           console.log(`Loaded CRM database from Supabase (remote=${remoteScore}, local=${localScore}, leads=${remoteLeads}).`);
         } else {
           // Keep richer local ops data, but still take the cloud-authoritative user roster
@@ -2083,17 +2099,19 @@ export class LocalDb {
           );
         }
 
-        // Vercel has no durable disk: any tombstones applied at boot must be written back
-        // to Supabase or the next cold start will resurrect deleted users from cloud.
+        // Vercel has no durable disk: tombstone/roster corrections must go back to Supabase.
+        // Skip the expensive verify round-trip here — only user-delete saveCritical verifies.
         const tombstonesGrew = (this.data.deleted_users?.length || 0) > remoteTombstoneCount;
         const usersStripped = (this.data.users?.length || 0) < remoteUserCount;
         if ((tombstonesGrew || usersStripped) && !this.isSparseCrmSnapshot(this.data)) {
           console.log(
             `[CRM DB] Pushing tombstone/roster corrections to Supabase (tombstonesGrew=${tombstonesGrew}, usersStripped=${usersStripped}).`,
           );
-          await this.pushToSupabase(this.data, { force: true });
+          await this.pushToSupabase(this.data, { force: true, verify: false });
         } else if (remoteIsPoorer || remoteScore < localScore) {
-          await this.pushToSupabase(this.data, { force: !this.isSparseCrmSnapshot(this.data) });
+          // Background recovery push — do not block cold-start app boot longer than needed.
+          void this.pushToSupabase(this.data, { force: !this.isSparseCrmSnapshot(this.data), skipProbe: true })
+            .catch(err => console.error('Background recovery push failed:', err));
         }
       } else {
         if (localScore <= 0 || this.isSparseCrmSnapshot(this.data)) {
@@ -2148,14 +2166,15 @@ export class LocalDb {
   }
 
   public get(): Schema {
-    // Re-apply sidecar tombstones so any in-memory elevation cannot flash deleted users.
-    applyAllUserTombstones(this.data);
+    // Fast path: apply in-memory tombstones only (no disk sidecar I/O on every request).
+    if (this.data.deleted_users?.length) applyUserTombstones(this.data);
     return this.data;
   }
 
   public save(options?: { forceBackup?: boolean }) {
     this.saveData(this.data, options);
-    return this.pushToSupabase(this.data).catch(() => {});
+    // Routine saves mirror to cloud in the background so login/API stay fast.
+    return this.scheduleCloudPush();
   }
 
   /** Record a permanent user deletion so backups/cloud cannot resurrect the account. */
@@ -2207,8 +2226,10 @@ export class LocalDb {
     applyAllUserTombstones(this.data);
     writeDeletedUsersSidecar(this.data.deleted_users);
     this.saveData(this.data, { forceBackup: true });
-    // Also scrub tombstoned users out of the richer-kept backup pointer files.
-    this.scrubTombstonedUsersFromBackupFiles();
+    // Also scrub tombstoned users out of the richer-kept backup pointer files (local only).
+    if (!isServerlessHost()) {
+      this.scrubTombstonedUsersFromBackupFiles();
+    }
 
     if (!this.supabaseConfigured()) {
       if (isServerlessHost()) {
@@ -2220,7 +2241,14 @@ export class LocalDb {
     }
 
     try {
-      await this.pushToSupabase(this.data, { force: true });
+      // Cancel pending background mirrors so the critical push is not queued behind them forever.
+      if (this.cloudPushTimer) {
+        clearTimeout(this.cloudPushTimer);
+        this.cloudPushTimer = null;
+      }
+      const waiters = this.cloudPushWaiters.splice(0, this.cloudPushWaiters.length);
+      await this.pushToSupabase(this.data, { force: true, verify: true });
+      waiters.forEach(w => w.resolve());
       return { cloud_pushed: true };
     } catch (err) {
       const cloud_error = err instanceof Error ? err.message : String(err);
