@@ -347,7 +347,7 @@ export default function UsersPage({
                   {canManageSelectedAdmin ? (
                     confirmDeleteUserId === selectedStaff.id ? (
                       <>
-                        <button className="btn btn-sm" onClick={() => { handleDeleteUser(selectedStaff.id); setConfirmDeleteUserId(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none' }}>Confirm remove</button>
+                        <button className="btn btn-sm" onClick={() => { void handleDeleteUser(selectedStaff.id); }} style={{ background: '#ef4444', color: '#fff', border: 'none' }}>Confirm remove</button>
                         <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDeleteUserId(null)}>Cancel</button>
                       </>
                     ) : (

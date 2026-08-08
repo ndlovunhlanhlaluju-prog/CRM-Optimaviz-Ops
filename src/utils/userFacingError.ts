@@ -60,9 +60,23 @@ export function toUserFacingError(err: unknown, fallback = 'Something went wrong
       if (detail && !looksInternal(detail)) return detail.slice(0, 200);
       return 'You do not have permission to do that.';
     }
-    if (status === 404) {
+    if (status === 404 || status === 405) {
       const detail = pickCandidate(anyErr);
+      const code = String(anyErr?.response?.data?.code || '');
+      // Vercel / static hosts often return a generic HTML/JSON "page could not be found"
+      // when an API route was not wired. Prefer a product-facing message.
+      const rawMessage = String(anyErr?.response?.data?.message || anyErr?.message || '');
+      const rawBody = anyErr?.response?.data;
+      const looksLikeHostNotFound =
+        code === 'API_NOT_FOUND' || code === 'NOT_FOUND'
+        || /page could not be found|API endpoint not found|Method Not Allowed|Cannot\s+DELETE|Cannot\s+POST/i.test(String(detail || ''))
+        || /page could not be found|NOT_FOUND|Method Not Allowed/i.test(rawMessage)
+        || (typeof rawBody === 'string' && /page could not be found|<!DOCTYPE|<html/i.test(rawBody));
+      if (looksLikeHostNotFound) {
+        return 'That action is not available on this server. Use a full Node host (npm start) or redeploy with the latest API routes.';
+      }
       if (detail && !looksInternal(detail)) return detail.slice(0, 200);
+      if (status === 405) return 'That action is not supported on this server.';
       return 'That item could not be found.';
     }
     if (status === 429) {

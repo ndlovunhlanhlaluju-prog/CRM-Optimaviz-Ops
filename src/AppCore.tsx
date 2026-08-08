@@ -8520,12 +8520,67 @@ export default function App() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    // Caller sets confirmDeleteUserId before calling; cleared after
+    // Prefer portable POST /delete so hosts that mishandle HTTP DELETE (CDN,
+    // some serverless/static setups, classic Vercel "page could not be found")
+    // still remove users. Fall back through alternate paths, then DELETE.
+    const cleanId = String(userId || '').trim();
+    if (!cleanId) {
+      alert('User id is missing.', 'error');
+      return;
+    }
+
+    const isMissingRoute = (err: any): boolean => {
+      const status = Number(err?.response?.status || 0);
+      if (status !== 404 && status !== 405) return false;
+      const data = err?.response?.data;
+      const code = String(data?.code || '');
+      // Application "user not found" must not trigger route fallbacks.
+      if (code === 'USER_NOT_FOUND' || code === 'USER_ID_REQUIRED' || code === 'CANNOT_DELETE_SELF' || code === 'SUPERADMIN_REQUIRED') {
+        return false;
+      }
+      if (code === 'API_NOT_FOUND' || code === 'NOT_FOUND') return true;
+      const detail = String(data?.detail || data?.message || data?.error || err?.message || '');
+      if (/page could not be found|API endpoint not found|NOT_FOUND|Cannot\s+DELETE|Method Not Allowed/i.test(detail)) {
+        return true;
+      }
+      // Host HTML 404 / empty body often means the method never reached Express.
+      if (typeof data === 'string' && /page could not be found|<!DOCTYPE|<html/i.test(data)) return true;
+      if (status === 404 && (data == null || data === '' || (typeof data === 'object' && !data.detail && !data.code))) {
+        return true;
+      }
+      return status === 405;
+    };
+
+    const attempts: Array<() => Promise<unknown>> = [
+      () => axios.post(`/api/users/${encodeURIComponent(cleanId)}/delete`, { user_id: cleanId }),
+      () => axios.post('/api/users/delete', { user_id: cleanId }),
+      () => axios.post(`/api/auth/users/${encodeURIComponent(cleanId)}/delete`, { user_id: cleanId }),
+      () => axios.post('/api/auth/users/delete', { user_id: cleanId }),
+      () => axios.delete(`/api/users/${encodeURIComponent(cleanId)}`),
+      () => axios.delete(`/api/auth/users/${encodeURIComponent(cleanId)}`),
+    ];
+
     try {
-      await axios.delete(`/api/users/${userId}`);
+      let lastErr: any = null;
+      let succeeded = false;
+      for (const run of attempts) {
+        try {
+          await run();
+          succeeded = true;
+          break;
+        } catch (err: any) {
+          lastErr = err;
+          if (!isMissingRoute(err)) throw err;
+        }
+      }
+      if (!succeeded) throw lastErr || new Error('Could not remove that user.');
+
+      setConfirmDeleteUserId(null);
+      if (selectedUserManagementId === cleanId) setSelectedUserManagementId('');
       await fetchUsersList();
+      showToast('User removed.');
     } catch (err: any) {
-      alert(toUserFacingError(err, 'Delete user failed.'), 'error');
+      alert(toUserFacingError(err, 'Could not remove that user.'), 'error');
     }
   };
 

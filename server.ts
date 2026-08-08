@@ -2579,6 +2579,8 @@ export async function createApp() {
       || isProtectedOwnerUser(user)
     )
   );
+  /** Platform superadmin only — full control over admins (create / demote / delete). */
+  const isSuperAdminUser = (user?: DbUser | null) => Boolean(user && isProtectedOwnerUser(user));
 
   const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const user = getSessionUser(req);
@@ -2602,6 +2604,16 @@ export async function createApp() {
     }
     req.user = user;
     next();
+  };
+
+  const requireSuperAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    requireAdmin(req, res, () => {
+      if (!isSuperAdminUser(req.user as DbUser)) {
+        res.status(403).json({ detail: 'Only the platform superadmin can perform this action.' });
+        return;
+      }
+      next();
+    });
   };
 
   const ensureProtectedOwnerAccounts = () => {
@@ -6575,7 +6587,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
   });
 
   const createManagedUser = (req: express.Request, res: express.Response) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body || {};
     if (!name || !email || !password || !role) { res.status(400).json({ detail: 'Missing required user fields' }); return; }
     const normalizedEmail = sanitizeString(email, 254).toLowerCase();
     if (LEGACY_OWNER_EMAILS.has(normalizedEmail)) {
@@ -6586,13 +6598,13 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       res.status(400).json({ detail: 'The platform superadmin account is managed separately.' });
       return;
     }
-    const wantsAdmin = role === 'admin';
+    const wantsAdmin = String(role).toLowerCase() === 'admin';
     // Only the platform superadmin can create other platform admins.
-    if (wantsAdmin && !isProtectedOwnerUser(req.user)) {
+    if (wantsAdmin && !isSuperAdminUser(req.user)) {
       res.status(403).json({ detail: 'Only the superadmin can add platform admins.' });
       return;
     }
-    const duplicate = db.get().users.some(u => u.email.toLowerCase() === normalizedEmail);
+    const duplicate = db.get().users.some(u => String(u.email || '').toLowerCase() === normalizedEmail);
     if (duplicate) { res.status(400).json({ detail: 'User email already registered.' }); return; }
     const newUser: DbUser = {
       id: newId('user'),
@@ -6615,20 +6627,21 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
   app.post('/api/users', requireAdmin, createManagedUser);
   app.post('/api/auth/users', requireAdmin, createManagedUser);
 
-  app.put('/api/auth/users/:user_id', requireAuth, (req, res) => {
-    const { user_id } = req.params;
+  const updateManagedUser = (req: express.Request, res: express.Response) => {
+    const user_id = sanitizeString(String(req.params.user_id || req.body?.user_id || ''), 80);
+    if (!user_id) { res.status(400).json({ detail: 'User id is required.' }); return; }
     const idx = db.get().users.findIndex(u => u.id === user_id);
     if (idx === -1) { res.status(404).json({ detail: 'User not found' }); return; }
     if (isProtectedOwnerUser(db.get().users[idx]) && req.user!.id !== user_id) { res.status(404).json({ detail: 'User not found' }); return; }
     if (req.user!.id !== user_id && !isAdminUser(req.user)) { res.status(403).json({ detail: 'You can only update your own profile.' }); return; }
     const orig = db.get().users[idx];
-    const { name, email, role, allowed_brand_ids, profile_picture_url } = req.body;
+    const { name, email, role, allowed_brand_ids, profile_picture_url } = req.body || {};
     const isSelf = req.user!.id === user_id;
-    let nextRole: 'admin' | 'user' = orig.role;
+    let nextRole: 'admin' | 'user' = orig.role === 'admin' ? 'admin' : 'user';
     if (!isSelf && role !== undefined) {
-      const desiredAdmin = role === 'admin';
+      const desiredAdmin = String(role).toLowerCase() === 'admin';
       // Promoting to / demoting from admin requires superadmin.
-      if (desiredAdmin !== (orig.role === 'admin') && !isProtectedOwnerUser(req.user)) {
+      if (desiredAdmin !== (orig.role === 'admin') && !isSuperAdminUser(req.user)) {
         res.status(403).json({ detail: 'Only the superadmin can change platform admin roles.' });
         return;
       }
@@ -6650,14 +6663,20 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       email: nextEmail,
       role:  nextRole,
       // platform_role is managed only by ensureProtectedOwnerAccounts / bootstrap — never via API.
-      platform_role: orig.platform_role,
+      platform_role: isProtectedOwnerUser(orig) ? 'superadmin' : (orig.platform_role || 'none'),
       allowed_brand_ids: isSelf || nextRole === 'admin'
-        ? orig.allowed_brand_ids
+        ? (nextRole === 'admin' ? [] : orig.allowed_brand_ids)
         : (allowed_brand_ids !== undefined ? cleanAllowedBrandIds(allowed_brand_ids) : orig.allowed_brand_ids),
     };
     db.save();
     res.json(publicUser(db.get().users[idx]));
-  });
+  };
+
+  app.put('/api/users/:user_id', requireAuth, updateManagedUser);
+  app.put('/api/auth/users/:user_id', requireAuth, updateManagedUser);
+  // Hosts that block PUT can use POST.
+  app.post('/api/users/:user_id/update', requireAuth, updateManagedUser);
+  app.post('/api/auth/users/:user_id/update', requireAuth, updateManagedUser);
 
   app.post('/api/auth/me/change-password', requireAuth, async (req, res) => {
     const { current_password, new_password } = req.body;
@@ -6671,37 +6690,67 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     const sessionToken = issueSession(db.get().users[idx]);
     auditSecurityEvent(req, 'password_change_self', { target_user_id: req.user!.id });
     await db.save();
-    res.setHeader('Set-Cookie', `optima_session_id=${encodeURIComponent(sessionToken)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
+    res.setHeader('Set-Cookie', sessionCookieHeader(req, sessionToken, 86400));
     res.json({ success: true });
   });
 
+  const resolveManagedUserId = (req: express.Request): string => {
+    const fromParams = sanitizeString(String(req.params.user_id || ''), 80);
+    if (fromParams) return fromParams;
+    const fromBody = sanitizeString(String(req.body?.user_id || req.body?.id || ''), 80);
+    if (fromBody) return fromBody;
+    const fromQuery = sanitizeString(String(req.query?.user_id || req.query?.id || ''), 80);
+    return fromQuery;
+  };
+
   const deleteManagedUser = async (req: express.Request, res: express.Response) => {
-    const { user_id } = req.params;
+    const user_id = resolveManagedUserId(req);
+    if (!user_id) {
+      res.status(400).json({ detail: 'User id is required.', code: 'USER_ID_REQUIRED' });
+      return;
+    }
     const target = db.get().users.find(u => u.id === user_id);
-    if (!target || isProtectedOwnerUser(target)) { res.status(404).json({ detail: 'User not found' }); return; }
-    if (req.user!.id === user_id) { res.status(400).json({ detail: 'You cannot delete your own account.' }); return; }
-    if (target.role === 'admin' && !isProtectedOwnerUser(req.user)) {
-      res.status(403).json({ detail: 'Only the superadmin can delete platform admins.' });
+    // Never reveal the protected superadmin account exists via this endpoint.
+    if (!target || isProtectedOwnerUser(target)) {
+      res.status(404).json({ detail: 'User not found.', code: 'USER_NOT_FOUND' });
+      return;
+    }
+    if (req.user!.id === user_id) {
+      res.status(400).json({ detail: 'You cannot delete your own account.', code: 'CANNOT_DELETE_SELF' });
+      return;
+    }
+    if (String(target.role || '').toLowerCase() === 'admin' && !isSuperAdminUser(req.user)) {
+      res.status(403).json({ detail: 'Only the superadmin can delete platform admins.', code: 'SUPERADMIN_REQUIRED' });
       return;
     }
     db.get().users = db.get().users.filter(u => u.id !== user_id);
-    auditSecurityEvent(req, 'user_delete', { target_user_id: user_id });
+    auditSecurityEvent(req, 'user_delete', { target_user_id: user_id, target_email: target.email, target_role: target.role });
     await db.save();
-    res.json({ success: true });
+    res.json({ success: true, deleted_user_id: user_id });
   };
 
+  // Portable user delete:
+  // - POST /delete (static path first so "delete" is never captured as :user_id)
+  // - POST /:user_id/delete for path-style clients
+  // - DELETE for full Node hosts (npm start, Railway, Render, VPS, etc.)
+  // Some CDNs / static+API hosts mishandle or strip HTTP DELETE.
+  app.post('/api/users/delete', requireAdmin, deleteManagedUser);
+  app.post('/api/auth/users/delete', requireAdmin, deleteManagedUser);
+  app.post('/api/users/:user_id/delete', requireAdmin, deleteManagedUser);
+  app.post('/api/auth/users/:user_id/delete', requireAdmin, deleteManagedUser);
   app.delete('/api/users/:user_id', requireAdmin, deleteManagedUser);
   app.delete('/api/auth/users/:user_id', requireAdmin, deleteManagedUser);
 
-  app.post('/api/auth/users/:user_id/change-password', requireAdmin, (req, res) => {
-    const { user_id } = req.params;
-    const { password } = req.body;
-    if (!password || password.length < 6) { res.status(400).json({ detail: 'Password must be at least 6 characters' }); return; }
+  const changeManagedUserPassword = (req: express.Request, res: express.Response) => {
+    const user_id = resolveManagedUserId(req);
+    const { password } = req.body || {};
+    if (!user_id) { res.status(400).json({ detail: 'User id is required.' }); return; }
+    if (!password || String(password).length < 6) { res.status(400).json({ detail: 'Password must be at least 6 characters' }); return; }
     const idx = db.get().users.findIndex(u => u.id === user_id);
     if (idx === -1) { res.status(404).json({ detail: 'User not found' }); return; }
     if (isProtectedOwnerUser(db.get().users[idx]) && req.user!.id !== user_id) { res.status(404).json({ detail: 'User not found' }); return; }
     const target = db.get().users[idx];
-    if (target.role === 'admin' && !isProtectedOwnerUser(req.user) && req.user!.id !== user_id) {
+    if (String(target.role || '').toLowerCase() === 'admin' && !isSuperAdminUser(req.user) && req.user!.id !== user_id) {
       res.status(403).json({ detail: 'Only the superadmin can reset platform admin passwords.' });
       return;
     }
@@ -6710,7 +6759,10 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     auditSecurityEvent(req, 'password_change_admin', { target_user_id: user_id });
     db.save();
     res.json({ success: true });
-  });
+  };
+
+  app.post('/api/users/:user_id/change-password', requireAdmin, changeManagedUserPassword);
+  app.post('/api/auth/users/:user_id/change-password', requireAdmin, changeManagedUserPassword);
 
   // â”€â”€â”€ Download zip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   app.get('/api/download-zip', async (req, res) => {
