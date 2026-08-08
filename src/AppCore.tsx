@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import axios from 'axios';
-import { setSessionToken, clearSessionToken, API_BASE_URL } from './services/api';
+import { setSessionToken, clearSessionToken, getStoredSessionToken, API_BASE_URL } from './services/api';
 import { User, Brand, BrandFunnel, CustomField, Lead, Note, CallLog, EmailLog, TeamMessage, TeamNote, WhatsAppLog, WhatsAppTemplate, MessageTemplate, BrandIntegration, EmailConnection, LeadSource, LeadSourceLog, WebsiteAnalyticsSite, WebsiteAnalyticsSummary, Sequence, SequenceStep, Task } from './types';
 import CommandPalette, { type CommandNavTab, type PowerActionId } from './components/CommandPalette';
 import FollowUpQueue from './components/FollowUpQueue';
@@ -8508,7 +8508,12 @@ export default function App() {
     };
     setUserSaving(true);
     try {
-      await axios.post('/api/users', payload);
+      // Ensure bearer token is attached (Vercel cookie-only auth fails across isolates).
+      const token = getStoredSessionToken();
+      if (token) setSessionToken(token);
+      await axios.post('/api/users', payload, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       setUserForm({ name: '', email: '', password: '', role: 'user', allowed_brand_ids: [] });
       setAddUserIsOpen(false);
       fetchUsersList();

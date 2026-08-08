@@ -13,6 +13,8 @@ export interface DbUser {
   platform_role?: 'superadmin' | 'owner' | 'none';
   session_token?: string;
   session_expires_at?: string;
+  /** Bumped on logout/password change to invalidate signed session tokens. */
+  session_version?: number;
   presence_status?: 'online' | 'away' | 'offline';
   presence_updated_at?: string;
   profile_picture_url?: string;

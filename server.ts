@@ -603,6 +603,17 @@ function newId(prefix: string): string {
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const PASSWORD_HASH_PREFIX = 'scrypt$';
+const SIGNED_SESSION_PREFIX = 'os1.';
+
+function getSessionSecret(): string {
+  return (
+    process.env.SESSION_SECRET
+    || process.env.OAUTH_STATE_SECRET
+    || process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD
+    || process.env.DATA_ENCRYPTION_KEY
+    || 'optima-crm-session-dev-only'
+  );
+}
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -623,15 +634,26 @@ function verifyPassword(password: string, stored?: string): boolean {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
+/**
+ * Issue a signed session token that works across Vercel serverless instances.
+ * Random tokens stored only on the in-memory user row broke as soon as the next
+ * request hit a different warm/cold instance (AUTH_REQUIRED on user create).
+ */
 function issueSession(user: DbUser): string {
-  const token = randomBytes(32).toString('hex');
+  const exp = Date.now() + SESSION_TTL_MS;
+  const ver = Number(user.session_version || 0);
+  const body = `${user.id}|${exp}|${ver}`;
+  const sig = createHmac('sha256', getSessionSecret()).update(body).digest('hex');
+  const token = `${SIGNED_SESSION_PREFIX}${Buffer.from(body, 'utf8').toString('base64url')}.${sig}`;
   user.session_token = token;
-  user.session_expires_at = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+  user.session_expires_at = new Date(exp).toISOString();
   return token;
 }
 
 function clearSession(user?: DbUser | null): void {
   if (!user) return;
+  // Invalidate any outstanding signed tokens for this user.
+  user.session_version = Number(user.session_version || 0) + 1;
   user.session_token = '';
   user.session_expires_at = '';
 }
@@ -640,6 +662,41 @@ function isSessionValid(user: DbUser | undefined, token: string): user is DbUser
   if (!user || !token || user.session_token !== token) return false;
   const expires = user.session_expires_at ? new Date(user.session_expires_at).getTime() : 0;
   return expires > Date.now();
+}
+
+function resolveUserFromSessionToken(users: DbUser[], token: string): DbUser | null {
+  const clean = String(token || '').trim();
+  if (!clean || !Array.isArray(users)) return null;
+
+  // Preferred: HMAC-signed token (serverless-safe).
+  if (clean.startsWith(SIGNED_SESSION_PREFIX)) {
+    try {
+      const raw = clean.slice(SIGNED_SESSION_PREFIX.length);
+      const dot = raw.lastIndexOf('.');
+      if (dot <= 0) return null;
+      const bodyB64 = raw.slice(0, dot);
+      const sig = raw.slice(dot + 1);
+      const body = Buffer.from(bodyB64, 'base64url').toString('utf8');
+      const expected = createHmac('sha256', getSessionSecret()).update(body).digest('hex');
+      const sigBuf = Buffer.from(sig, 'utf8');
+      const expBuf = Buffer.from(expected, 'utf8');
+      if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) return null;
+      const [userId, expStr, verStr] = body.split('|');
+      const exp = Number(expStr);
+      if (!userId || !Number.isFinite(exp) || exp <= Date.now()) return null;
+      const user = users.find(u => u.id === userId);
+      if (!user) return null;
+      const tokenVer = Number(verStr || 0);
+      const liveVer = Number(user.session_version || 0);
+      if (tokenVer !== liveVer) return null;
+      return user;
+    } catch {
+      return null;
+    }
+  }
+
+  // Legacy: random token stored on the user row (same-instance only).
+  return users.find(u => isSessionValid(u, clean)) || null;
 }
 
 function brandEnvPrefix(brandId: string): string {
@@ -2501,10 +2558,12 @@ export async function createApp() {
   // â”€â”€â”€ Auth helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const getSessionUser = (req: express.Request): DbUser | null => {
     try {
+      const users = db.get().users || [];
+
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7).trim();
-        const user = db.get().users.find(u => isSessionValid(u, token));
+        const user = resolveUserFromSessionToken(users, token);
         if (user) return user;
       }
 
@@ -2523,7 +2582,7 @@ export async function createApp() {
 
       const sessionToken = cookies.optima_session_id;
       if (!sessionToken) return null;
-      return db.get().users.find(u => isSessionValid(u, sessionToken)) || null;
+      return resolveUserFromSessionToken(users, sessionToken);
     } catch (err) {
       console.error('Error in getSessionUser:', err);
       return null;
