@@ -2774,15 +2774,42 @@ export async function createApp() {
 
   // â”€â”€â”€ Standalone database status and maintenance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   app.get('/api/admin/database/status', requireAdmin, (_req, res) => {
+    const supabase = db.getSupabaseStatus();
     res.json({
-      mode: 'standalone_local',
-      database: { file: process.env['CRM_DB_FILE'] || 'db.json', persistent: true },
+      mode: supabase.configured
+        ? (supabase.serverless ? 'vercel_supabase' : 'supabase_primary')
+        : (supabase.serverless ? 'vercel_no_supabase' : 'standalone_local'),
+      database: {
+        file: process.env['CRM_DB_FILE'] || 'db.json',
+        // On Vercel only Supabase is durable; local files are ephemeral.
+        persistent: supabase.configured ? true : !supabase.serverless,
+      },
       local_backup: { enabled: true, directory: process.env['CRM_BACKUP_DIR'] || 'backups/ops' },
+      supabase: {
+        configured: supabase.configured,
+        url: supabase.url,
+        key_kind: supabase.key_kind,
+        table: supabase.table,
+        record_id: supabase.record_id,
+        last_sync_at: supabase.last_sync_at,
+        last_error: supabase.last_error,
+        using_fallback: supabase.using_fallback,
+        serverless: supabase.serverless,
+        // anon keys often cannot upsert — durable user delete needs service_role
+        durable_user_delete_ok: supabase.configured && supabase.key_kind === 'service_role',
+      },
+      users: {
+        count: db.get().users.length,
+        emails: db.get().users.map(u => String(u.email || '').toLowerCase()),
+        deleted_count: Array.isArray((db.get() as any).deleted_users) ? (db.get() as any).deleted_users.length : 0,
+        deleted_emails: Array.isArray((db.get() as any).deleted_users)
+          ? (db.get() as any).deleted_users.map((t: any) => String(t.email || t.id || '').toLowerCase()).filter(Boolean)
+          : [],
+      },
       counts: {
         leads: db.get().leads.length,
         taskgo_leads: db.get().leads.filter(l => l.brand_id === 'taskgo').length,
         idao_leads: db.get().leads.filter(l => l.brand_id === 'idao').length,
-
         optimaviz_leads: db.get().leads.filter(l => l.brand_id === 'optimaviz').length,
         emails: db.get().emails.length,
         notes: db.get().notes.length,
@@ -6748,10 +6775,11 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       res.status(403).json({ detail: 'Only the superadmin can delete platform admins.', code: 'SUPERADMIN_REQUIRED' });
       return;
     }
+    const targetEmail = String(target.email || '').toLowerCase().trim();
     // Tombstone first so richer backups / Supabase cannot resurrect this account.
     if (typeof db.tombstoneDeletedUser === 'function') {
       db.tombstoneDeletedUser(
-        { id: user_id, email: target.email },
+        { id: user_id, email: targetEmail },
         req.user!.id,
       );
     } else {
@@ -6760,7 +6788,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       };
       const entry = {
         id: user_id,
-        email: String(target.email || '').toLowerCase().trim() || undefined,
+        email: targetEmail || undefined,
         deleted_at: new Date().toISOString(),
         deleted_by: req.user!.id,
       };
@@ -6773,8 +6801,8 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       ].slice(0, 500);
     }
     db.get().users = db.get().users.filter(u => u.id !== user_id
-      && String(u.email || '').toLowerCase().trim() !== String(target.email || '').toLowerCase().trim());
-    auditSecurityEvent(req, 'user_delete', { target_user_id: user_id, target_email: target.email, target_role: target.role });
+      && String(u.email || '').toLowerCase().trim() !== targetEmail);
+    auditSecurityEvent(req, 'user_delete', { target_user_id: user_id, target_email: targetEmail, target_role: target.role });
     // Force backup + cloud push so the deletion survives Vercel cold starts / recovery.
     try {
       if (typeof db.saveCritical === 'function') {
@@ -6788,10 +6816,35 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
         detail: err?.message || 'User was removed in memory but could not be persisted to cloud storage. Try again.',
         code: 'DELETE_PERSIST_FAILED',
         deleted_user_id: user_id,
+        deleted_email: targetEmail,
+        supabase: db.getSupabaseStatus(),
       });
       return;
     }
-    res.json({ success: true, deleted_user_id: user_id });
+    // Final guard: if the account is still visible after critical save, surface a hard failure.
+    const stillVisible = db.get().users.some(
+      u => u.id === user_id || String(u.email || '').toLowerCase().trim() === targetEmail,
+    );
+    if (stillVisible) {
+      res.status(503).json({
+        detail: `User ${targetEmail || user_id} is still present after delete persist. Check Supabase service role key.`,
+        code: 'DELETE_NOT_STUCK',
+        deleted_user_id: user_id,
+        deleted_email: targetEmail,
+        supabase: db.getSupabaseStatus(),
+      });
+      return;
+    }
+    res.json({
+      success: true,
+      deleted_user_id: user_id,
+      deleted_email: targetEmail,
+      supabase: {
+        configured: db.getSupabaseStatus().configured,
+        key_kind: db.getSupabaseStatus().key_kind,
+        last_sync_at: db.getSupabaseStatus().last_sync_at,
+      },
+    });
   };
 
   // Portable user delete:

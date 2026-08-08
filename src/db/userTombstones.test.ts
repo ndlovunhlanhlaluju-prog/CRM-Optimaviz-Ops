@@ -50,6 +50,20 @@ function baseSchema(overrides: Partial<Schema> = {}): Schema {
 }
 
 describe('user tombstones', () => {
+  it('matches tombstones when email was typed with # instead of @', () => {
+    const data = baseSchema({
+      users: [
+        { id: 'u1', name: 'Nana', email: 'nanazawami89@gmail.com', role: 'user', created_at: '2026-01-01' } as any,
+      ],
+      deleted_users: [
+        { id: 'u1', email: 'nanazawami89#gmail.com', deleted_at: '2026-04-01T00:00:00.000Z' },
+      ],
+    });
+    applyUserTombstones(data);
+    expect(data.users).toHaveLength(0);
+    expect(isUserTombstoned(data, { email: 'nanazawami89@gmail.com' })).toBe(true);
+  });
+
   it('merges tombstones by id and email without duplicating entries', () => {
     const merged = mergeDeletedUsers(
       [{ id: 'u1', email: 'a@example.com', deleted_at: '2026-01-01T00:00:00.000Z' }],

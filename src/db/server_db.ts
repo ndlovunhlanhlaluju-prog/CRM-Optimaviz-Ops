@@ -1006,6 +1006,13 @@ export interface SupabaseStatus {
   last_sync_at?: string;
   last_error?: string;
   using_fallback: boolean;
+  /** Which key type is loaded (never the secret itself). service_role is required for durable deletes on Vercel. */
+  key_kind?: 'service_role' | 'secret' | 'anon' | 'none';
+  table?: string;
+  record_id?: string;
+  serverless?: boolean;
+  user_count?: number;
+  deleted_user_count?: number;
 }
 
 const SUPABASE_TABLE = process.env.SUPABASE_TABLE || 'crm_data';
@@ -1063,7 +1070,13 @@ function safeSchema(parsed: Partial<Schema> | null | undefined): Schema {
 }
 
 function normalizeUserEmail(email: unknown): string {
-  return String(email || '').toLowerCase().trim();
+  let value = String(email || '').toLowerCase().trim();
+  // Common typo: user#domain.com → user@domain.com (also matches paste quirks)
+  if (value && !value.includes('@') && value.includes('#')) {
+    const fixed = value.replace('#', '@');
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fixed)) value = fixed;
+  }
+  return value;
 }
 
 type UserTombstone = NonNullable<Schema['deleted_users']>[number];
@@ -1817,21 +1830,49 @@ export class LocalDb {
     return leads < 15 && score < 20_000;
   }
 
-  private async pushToSupabase(data: Schema, options?: { force?: boolean }) {
-    if (!this.supabaseConfigured() || this.isSyncingToSupabase) return;
-    if (!options?.force && this.isSparseCrmSnapshot(data)) {
-      console.warn(
-        `[CRM DB] Refusing Supabase push of sparse snapshot (leads=${data.leads?.length || 0}, score=${schemaRichness(data)}). Protects cloud data from seed overwrites.`,
-      );
+  /** Serialize cloud writes so concurrent warm-instance requests cannot skip a forced delete push. */
+  private supabasePushChain: Promise<void> = Promise.resolve();
+
+  private async pushToSupabase(data: Schema, options?: { force?: boolean }): Promise<void> {
+    if (!this.supabaseConfigured()) {
+      if (options?.force) {
+        throw new Error(
+          'Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on Vercel.',
+        );
+      }
       return;
     }
-    const hasActiveSessions = (data.users || []).some(
-      u => u.session_token && u.session_expires_at && new Date(u.session_expires_at).getTime() > Date.now(),
-    );
-    sanitizeSchema(data);
-    applyAllUserTombstones(data);
+
+    // Queue all pushes (especially force) so we never silently no-op while another sync runs.
+    const previous = this.supabasePushChain;
+    let release!: () => void;
+    this.supabasePushChain = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await previous;
+
     this.isSyncingToSupabase = true;
     try {
+      if (!options?.force && this.isSparseCrmSnapshot(data)) {
+        console.warn(
+          `[CRM DB] Refusing Supabase push of sparse snapshot (leads=${data.leads?.length || 0}, score=${schemaRichness(data)}). Protects cloud data from seed overwrites.`,
+        );
+        return;
+      }
+      const hasActiveSessions = (data.users || []).some(
+        u => u.session_token && u.session_expires_at && new Date(u.session_expires_at).getTime() > Date.now(),
+      );
+      sanitizeSchema(data);
+      applyAllUserTombstones(data);
+
+      // Snapshot roster before probe so force deletes cannot be re-hydrated from remote.
+      const forceRoster = options?.force
+        ? {
+            users: [...(data.users || [])],
+            deleted_users: mergeDeletedUsers(data.deleted_users),
+          }
+        : null;
+
       // Probe remote so we never drop cloud-only user tombstones on upsert.
       try {
         const probe = await fetch(this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data,updated_at`), {
@@ -1841,14 +1882,24 @@ export class LocalDb {
           const rows = await probe.json() as Array<{ data?: Partial<Schema> }>;
           if (rows[0]?.data) {
             const remoteSchema = safeSchema(rows[0].data);
-            if (remoteSchema.deleted_users?.length || remoteSchema.users?.length) {
-              data.deleted_users = mergeDeletedUsers(data.deleted_users, remoteSchema.deleted_users, readDeletedUsersSidecar());
-              // Keep live roster; don't reintroduce remote-only deleted/demo users.
+            data.deleted_users = mergeDeletedUsers(
+              data.deleted_users,
+              remoteSchema.deleted_users,
+              readDeletedUsersSidecar(),
+              forceRoster?.deleted_users,
+            );
+            if (options?.force && forceRoster) {
+              // Critical path (user delete): local roster + unioned tombstones win.
+              // Never reintroduce remote users that we just removed.
+              data.users = mergeUserRosters(forceRoster.users, [], data.deleted_users, {
+                allowSecondaryAdds: false,
+              });
+            } else if (remoteSchema.deleted_users?.length || remoteSchema.users?.length) {
               data.users = mergeUserRosters(data.users, remoteSchema.users, data.deleted_users, {
                 allowSecondaryAdds: false,
               });
-              applyUserTombstones(data);
             }
+            applyUserTombstones(data);
             if (!options?.force && !hasActiveSessions) {
               const remoteScore = schemaRichness(remoteSchema);
               const localScore = schemaRichness(data);
@@ -1858,8 +1909,14 @@ export class LocalDb {
               }
             }
           }
+        } else if (options?.force) {
+          const text = await probe.text();
+          throw new Error(`Supabase probe failed before forced push (${probe.status}): ${text}`);
         }
-      } catch { /* proceed with local tombstones only */ }
+      } catch (err) {
+        if (options?.force) throw err;
+        /* non-force: proceed with local tombstones only */
+      }
 
       const response = await fetch(this.getSupabaseEndpoint(), {
         method: 'POST',
@@ -1870,10 +1927,52 @@ export class LocalDb {
         const text = await response.text();
         throw new Error(`Supabase upsert failed (${response.status}): ${text}`);
       }
+
+      // Verify force deletes actually stuck in cloud (RLS/wrong key can look like success otherwise).
+      if (options?.force && forceRoster?.deleted_users?.length) {
+        const verify = await fetch(
+          this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data`),
+          { headers: this.supabaseHeaders() },
+        );
+        if (!verify.ok) {
+          const text = await verify.text();
+          throw new Error(`Supabase verify-read failed after forced push (${verify.status}): ${text}`);
+        }
+        const rows = await verify.json() as Array<{ data?: Partial<Schema> }>;
+        const cloud = safeSchema(rows[0]?.data);
+        cloud.deleted_users = mergeDeletedUsers(cloud.deleted_users, forceRoster.deleted_users);
+        applyUserTombstones(cloud);
+        for (const t of forceRoster.deleted_users) {
+          const tid = String(t.id || '').trim();
+          const temail = normalizeUserEmail(t.email);
+          const stillThere = (cloud.users || []).some(u => {
+            const id = String(u?.id || '').trim();
+            const email = normalizeUserEmail(u?.email);
+            if (id && tid && !tid.startsWith('email:') && id === tid) return true;
+            if (email && temail && email === temail) return true;
+            return false;
+          });
+          if (stillThere) {
+            throw new Error(
+              `Supabase still has deleted user after push (${t.email || t.id}). Use SUPABASE_SERVICE_ROLE_KEY (not anon) and allow upserts on ${SUPABASE_TABLE}.`,
+            );
+          }
+        }
+      }
+
       this.lastSupabaseSyncAt = new Date().toISOString();
       this.lastSupabaseError = undefined;
+      // Keep in-memory data aligned with what we just forced to cloud.
+      if (options?.force) {
+        this.data.users = data.users;
+        this.data.deleted_users = data.deleted_users;
+      }
+    } catch (err) {
+      this.lastSupabaseError = err instanceof Error ? err.message : String(err);
+      throw err;
     } finally {
       this.isSyncingToSupabase = false;
+      release();
     }
   }
 
@@ -2028,12 +2127,23 @@ export class LocalDb {
   }
 
   public getSupabaseStatus(): SupabaseStatus {
+    const key_kind: SupabaseStatus['key_kind'] =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role'
+        : process.env.SUPABASE_SECRET_KEY ? 'secret'
+          : (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY) ? 'anon'
+            : 'none';
     return {
       configured: this.supabaseConfigured(),
       url: SUPABASE_URL || undefined,
       last_sync_at: this.lastSupabaseSyncAt,
       last_error: this.lastSupabaseError,
       using_fallback: !this.supabaseConfigured() || Boolean(this.lastSupabaseError),
+      key_kind,
+      table: SUPABASE_TABLE,
+      record_id: SUPABASE_RECORD_ID,
+      serverless: isServerlessHost(),
+      user_count: Array.isArray(this.data?.users) ? this.data.users.length : 0,
+      deleted_user_count: Array.isArray(this.data?.deleted_users) ? this.data.deleted_users.length : 0,
     };
   }
 
