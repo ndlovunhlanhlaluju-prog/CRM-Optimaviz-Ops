@@ -700,6 +700,148 @@ if (!isPathWritable(DB_PATH)) {
 
 console.log(`[CRM DB] standalone file=${DB_PATH} backups=${BACKUP_DIR}`);
 
+/**
+ * Sidecar for permanent user deletions.
+ * Written independently of full CRM snapshots so a leads-richer backup/Supabase
+ * restore cannot drop tombstones and resurrect deleted staff/admins.
+ */
+function deletedUsersSidecarPath(): string {
+  return path.join(BACKUP_DIR, 'deleted-users.json');
+}
+
+function readDeletedUsersSidecar(): NonNullable<Schema['deleted_users']> {
+  try {
+    const filePath = deletedUsersSidecarPath();
+    if (!fs.existsSync(filePath)) return [];
+    const raw = readJsonTextFile(filePath);
+    if (!raw?.trim()) return [];
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.deleted_users)
+        ? parsed.deleted_users
+        : [];
+    return mergeDeletedUsers(list);
+  } catch (err) {
+    console.error('Error reading deleted-users sidecar:', err);
+    return [];
+  }
+}
+
+function writeDeletedUsersSidecar(list: Schema['deleted_users'] | undefined | null): void {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const merged = mergeDeletedUsers(list, readDeletedUsersSidecar());
+    const filePath = deletedUsersSidecarPath();
+    const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+    fs.writeFileSync(tmpPath, JSON.stringify({ deleted_users: merged, updated_at: new Date().toISOString() }, null, 2), 'utf-8');
+    fs.renameSync(tmpPath, filePath);
+  } catch (err) {
+    console.error('Error writing deleted-users sidecar:', err);
+  }
+}
+
+/**
+ * Built-in demo/bootstrap accounts that ship in seed + old backups.
+ * If they are absent from the live roster, treat that as intentional removal
+ * so leads-richer snapshots cannot resurrect them.
+ */
+const DEMO_BOOTSTRAP_USER_EMAILS = new Set([
+  'agent@dirotiq.com',
+  'admin@dirotiq.com',
+]);
+
+/** When live already has a roster, tombstone seed accounts that are no longer present. */
+function autoTombstoneAbsentDemoUsers(data: Schema): Schema {
+  if (!Array.isArray(data.users) || data.users.length === 0) return data;
+  const liveEmails = new Set(
+    data.users.map(u => normalizeUserEmail(u.email)).filter(Boolean),
+  );
+  const extras: NonNullable<Schema['deleted_users']> = [];
+  for (const email of DEMO_BOOTSTRAP_USER_EMAILS) {
+    if (liveEmails.has(email)) continue;
+    if (isUserTombstoned(data, { email })) continue;
+    extras.push({
+      id: `email:${email}`,
+      email,
+      deleted_at: new Date().toISOString(),
+      deleted_by: 'system:auto-tombstone-absent-demo',
+    });
+  }
+  if (extras.length) {
+    data.deleted_users = mergeDeletedUsers(data.deleted_users, extras);
+  }
+  return data;
+}
+
+/** Attach sidecar + embedded tombstones, then strip resurrected users. */
+function applyAllUserTombstones(data: Schema): Schema {
+  data.deleted_users = mergeDeletedUsers(data.deleted_users, readDeletedUsersSidecar());
+  autoTombstoneAbsentDemoUsers(data);
+  applyUserTombstones(data);
+  return data;
+}
+
+/**
+ * Prefer the live user roster when elevating a leads-richer snapshot.
+ * Never re-introduce accounts that only exist on the secondary snapshot
+ * when the preferred roster is already non-empty (delete must stick).
+ */
+export function mergeUserRosters(
+  preferred: DbUser[] | undefined | null,
+  secondary: DbUser[] | undefined | null,
+  tombstones?: Schema['deleted_users'] | null,
+  options?: { allowSecondaryAdds?: boolean },
+): DbUser[] {
+  const allowSecondaryAdds = Boolean(options?.allowSecondaryAdds);
+  const deletedIds = new Set<string>();
+  const deletedEmails = new Set<string>();
+  for (const t of mergeDeletedUsers(tombstones)) {
+    const id = String(t.id || '').trim();
+    if (id && !id.startsWith('email:')) deletedIds.add(id);
+    const email = normalizeUserEmail(t.email);
+    if (email) deletedEmails.add(email);
+    if (id.startsWith('email:')) deletedEmails.add(id.slice('email:'.length));
+  }
+
+  const isDeleted = (user: DbUser | null | undefined) => {
+    if (!user) return true;
+    const id = String(user.id || '').trim();
+    const email = normalizeUserEmail(user.email);
+    if (id && deletedIds.has(id)) return true;
+    if (email && deletedEmails.has(email)) return true;
+    return false;
+  };
+
+  const byId = new Map<string, DbUser>();
+  const emailToId = new Map<string, string>();
+
+  const put = (user: DbUser, overwrite: boolean) => {
+    if (isDeleted(user)) return;
+    const id = String(user.id || '').trim();
+    const email = normalizeUserEmail(user.email);
+    if (!id && !email) return;
+    const key = id || `email:${email}`;
+    if (email && emailToId.has(email) && emailToId.get(email) !== key) {
+      if (!overwrite) return;
+      const priorKey = emailToId.get(email)!;
+      byId.delete(priorKey);
+    }
+    if (byId.has(key) && !overwrite) return;
+    byId.set(key, user);
+    if (email) emailToId.set(email, key);
+  };
+
+  for (const user of preferred || []) put(user, true);
+
+  const preferredHasRoster = (preferred || []).some(u => !isDeleted(u));
+  if (!preferredHasRoster || allowSecondaryAdds) {
+    for (const user of secondary || []) put(user, false);
+  }
+
+  return Array.from(byId.values());
+}
+
 /** Prefer richer CRM snapshots so empty seed/cloud never silently replaces real data. */
 function schemaRichness(data: Partial<Schema> | null | undefined): number {
   if (!data) return 0;
@@ -707,11 +849,11 @@ function schemaRichness(data: Partial<Schema> | null | undefined): number {
   const customFields = Array.isArray(data.custom_fields) ? data.custom_fields.length : 0;
   const emails = Array.isArray(data.emails) ? data.emails.length : 0;
   const notes = Array.isArray(data.notes) ? data.notes.length : 0;
-  const users = Array.isArray(data.users) ? data.users.length : 0;
+  // Do NOT score users — a backup with more seed/staff accounts must not outrank live.
   const whatsapp = Array.isArray(data.whatsapp) ? data.whatsapp.length : 0;
   const tasks = Array.isArray(data.tasks) ? data.tasks.length : 0;
   // Leads dominate; custom field definitions matter for column recovery.
-  return leads * 1000 + customFields * 50 + emails * 5 + notes * 3 + whatsapp * 3 + tasks + users;
+  return leads * 1000 + customFields * 50 + emails * 5 + notes * 3 + whatsapp * 3 + tasks;
 }
 
 function readJsonTextFile(filePath: string): string | null {
@@ -796,10 +938,8 @@ function recoverSchemaFromBackups(): Schema | null {
   if (best && bestScore > 0) {
     // Always carry every known user tombstone onto the richest snapshot so a
     // leads-heavy backup without the delete cannot resurrect staff/admins.
-    if (tombstoneLists.length) {
-      best.deleted_users = mergeDeletedUsers(best.deleted_users, ...tombstoneLists);
-      applyUserTombstones(best);
-    }
+    best.deleted_users = mergeDeletedUsers(best.deleted_users, ...tombstoneLists, readDeletedUsersSidecar());
+    applyUserTombstones(best);
     console.log(`Recovered CRM database from backup (${bestPath}) with richness score ${bestScore}.`);
     return best;
   }
@@ -1155,7 +1295,9 @@ export class LocalDb {
   constructor() {
     this.data = this.load();
     sanitizeSchema(this.data);
-    applyUserTombstones(this.data);
+    applyAllUserTombstones(this.data);
+    // Persist sidecar immediately so later elevation cannot drop tombstones.
+    if (this.data.deleted_users?.length) writeDeletedUsersSidecar(this.data.deleted_users);
     let userModified = false;
     this.data.users.forEach(u => {
       const email = String(u.email || '').toLowerCase().trim();
@@ -1183,14 +1325,27 @@ export class LocalDb {
   }
 
   private load(): Schema {
+    const sidecarTombstones = readDeletedUsersSidecar();
+
     // 1) Prefer primary db.json when it has real operational data
     const primary = tryReadSchemaFile(DB_PATH);
     if (primary && schemaRichness(primary) > 0) {
       // Still merge tombstones from richer backups so deleted admins stay gone
       // even when leads-heavy backups temporarily outrank the live file.
       const recovered = recoverSchemaFromBackups();
-      if (recovered?.deleted_users?.length) {
-        primary.deleted_users = mergeDeletedUsers(primary.deleted_users, recovered.deleted_users);
+      primary.deleted_users = mergeDeletedUsers(
+        primary.deleted_users,
+        recovered?.deleted_users,
+        sidecarTombstones,
+      );
+      // Never rehydrate users that only exist on a richer backup when live already has a roster.
+      if (recovered && schemaRichness(recovered) > schemaRichness(primary)) {
+        primary.leads = (recovered.leads?.length || 0) > (primary.leads?.length || 0) ? recovered.leads : primary.leads;
+        if ((recovered.notes?.length || 0) > (primary.notes?.length || 0)) primary.notes = recovered.notes;
+        if ((recovered.emails?.length || 0) > (primary.emails?.length || 0)) primary.emails = recovered.emails;
+        primary.users = mergeUserRosters(primary.users, recovered.users, primary.deleted_users, {
+          allowSecondaryAdds: false,
+        });
       }
       return applyUserTombstones(primary);
     }
@@ -1199,12 +1354,20 @@ export class LocalDb {
     //    (missing/corrupt db.json previously wiped live data via seed + cloud push)
     const recovered = recoverSchemaFromBackups();
     if (recovered && schemaRichness(recovered) > schemaRichness(primary)) {
-      if (primary?.deleted_users?.length) {
-        recovered.deleted_users = mergeDeletedUsers(recovered.deleted_users, primary.deleted_users);
+      recovered.deleted_users = mergeDeletedUsers(
+        recovered.deleted_users,
+        primary?.deleted_users,
+        sidecarTombstones,
+      );
+      if (primary?.users?.length) {
+        recovered.users = mergeUserRosters(primary.users, recovered.users, recovered.deleted_users, {
+          allowSecondaryAdds: false,
+        });
       }
       applyUserTombstones(recovered);
       try {
         this.writeJsonFileSafe(DB_PATH, recovered);
+        writeDeletedUsersSidecar(recovered.deleted_users);
         console.log(`Restored ${DB_PATH} from local backup (leads=${recovered.leads.length}).`);
       } catch (err) {
         console.error('Failed to write recovered db.json:', err);
@@ -1212,10 +1375,15 @@ export class LocalDb {
       return recovered;
     }
 
-    if (primary) return applyUserTombstones(primary);
+    if (primary) {
+      primary.deleted_users = mergeDeletedUsers(primary.deleted_users, sidecarTombstones);
+      return applyUserTombstones(primary);
+    }
 
     console.warn('No db.json or usable backup found. Starting from seed data (in memory only until first real save).');
-    return applyUserTombstones(this.getSeededData());
+    const seeded = this.getSeededData();
+    seeded.deleted_users = mergeDeletedUsers(seeded.deleted_users, sidecarTombstones);
+    return applyUserTombstones(seeded);
   }
 
   private getSeededData(): Schema {
@@ -1509,12 +1677,19 @@ export class LocalDb {
   private saveData(data: Schema, options?: { forceBackup?: boolean }) {
     try {
       const forceBackup = Boolean(options?.forceBackup);
-      applyUserTombstones(data);
+      applyAllUserTombstones(data);
 
       // Refuse to replace a richer on-disk CRM with a clearly poorer snapshot.
       const existing = tryReadSchemaFile(DB_PATH);
-      if (existing?.deleted_users?.length) {
-        data.deleted_users = mergeDeletedUsers(data.deleted_users, existing.deleted_users);
+      if (existing?.deleted_users?.length || existing?.users?.length) {
+        data.deleted_users = mergeDeletedUsers(data.deleted_users, existing?.deleted_users, readDeletedUsersSidecar());
+        // Keep the on-disk roster when this save is not a forced security write and
+        // would otherwise reintroduce users from a poorer in-memory snapshot.
+        if (!forceBackup && (existing?.users?.length || 0) > 0) {
+          data.users = mergeUserRosters(data.users, existing!.users, data.deleted_users, {
+            allowSecondaryAdds: false,
+          });
+        }
         applyUserTombstones(data);
       }
       const incomingScore = schemaRichness(data);
@@ -1546,6 +1721,7 @@ export class LocalDb {
 
       // Standalone mode keeps the bundled local database authoritative.
       this.writeJsonFileSafe(DB_PATH, data);
+      writeDeletedUsersSidecar(data.deleted_users);
       this.writeTimestampedBackup(data, { force: forceBackup });
     } catch (err) {
       console.error('Error saving database:', err);
@@ -1658,11 +1834,10 @@ export class LocalDb {
       u => u.session_token && u.session_expires_at && new Date(u.session_expires_at).getTime() > Date.now(),
     );
     sanitizeSchema(data);
-    applyUserTombstones(data);
+    applyAllUserTombstones(data);
     this.isSyncingToSupabase = true;
     try {
       // Probe remote so we never drop cloud-only user tombstones on upsert.
-      let remoteSchema: Schema | null = null;
       try {
         const probe = await fetch(this.getSupabaseEndpoint(`?id=eq.${encodeURIComponent(SUPABASE_RECORD_ID)}&select=data,updated_at`), {
           headers: this.supabaseHeaders(),
@@ -1670,9 +1845,13 @@ export class LocalDb {
         if (probe.ok) {
           const rows = await probe.json() as Array<{ data?: Partial<Schema> }>;
           if (rows[0]?.data) {
-            remoteSchema = safeSchema(rows[0].data);
-            if (remoteSchema.deleted_users?.length) {
-              data.deleted_users = mergeDeletedUsers(data.deleted_users, remoteSchema.deleted_users);
+            const remoteSchema = safeSchema(rows[0].data);
+            if (remoteSchema.deleted_users?.length || remoteSchema.users?.length) {
+              data.deleted_users = mergeDeletedUsers(data.deleted_users, remoteSchema.deleted_users, readDeletedUsersSidecar());
+              // Keep live roster; don't reintroduce remote-only deleted/demo users.
+              data.users = mergeUserRosters(data.users, remoteSchema.users, data.deleted_users, {
+                allowSecondaryAdds: false,
+              });
               applyUserTombstones(data);
             }
             if (!options?.force && !hasActiveSessions) {
@@ -1728,41 +1907,62 @@ export class LocalDb {
           localScore = s;
         }
       }
-      // Always union tombstones across candidates before elevating any snapshot.
+      // Always union tombstones across candidates + sidecar before elevating any snapshot.
       const tombstoneUnion = mergeDeletedUsers(
         this.data.deleted_users,
+        readDeletedUsersSidecar(),
         ...localCandidates.map(c => c.deleted_users),
       );
+      const liveUsers = this.data.users;
       this.data.deleted_users = tombstoneUnion;
       applyUserTombstones(this.data);
 
       if (bestLocal !== this.data && localScore > schemaRichness(this.data)) {
-        bestLocal.deleted_users = mergeDeletedUsers(bestLocal.deleted_users, tombstoneUnion);
-        applyUserTombstones(bestLocal);
-        this.data = bestLocal;
-        console.log(`[CRM DB] Elevated local snapshot from backup/disk (score=${localScore}).`);
+        // Elevate operational CRM data (leads/etc) but keep the live user roster.
+        // This is the main resurrection path: db-latest had more leads + seed agent.
+        const elevated: Schema = {
+          ...bestLocal,
+          deleted_users: mergeDeletedUsers(bestLocal.deleted_users, tombstoneUnion),
+          users: mergeUserRosters(liveUsers, bestLocal.users, tombstoneUnion, {
+            allowSecondaryAdds: !(liveUsers && liveUsers.length > 0),
+          }),
+        };
+        applyUserTombstones(elevated);
+        this.data = elevated;
+        console.log(`[CRM DB] Elevated local snapshot from backup/disk (score=${localScore}) while preserving user roster.`);
       }
-      applyUserTombstones(this.data);
+      applyAllUserTombstones(this.data);
 
       if (rows.length > 0 && rows[0].data) {
         const remote = safeSchema(rows[0].data);
         sanitizeSchema(remote);
-        remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users, tombstoneUnion);
+        remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users, tombstoneUnion, readDeletedUsersSidecar());
+        // Prefer live roster; only admit non-tombstoned remote users that aren't
+        // already-deleted demo accounts. Secondary adds still honor tombstones.
+        remote.users = mergeUserRosters(this.data.users, remote.users, remote.deleted_users, {
+          allowSecondaryAdds: true,
+        });
+        autoTombstoneAbsentDemoUsers(remote);
         applyUserTombstones(remote);
         const remoteScore = schemaRichness(remote);
         const remoteLeads = remote.leads?.length || 0;
         const localLeads = this.data.leads?.length || 0;
         const remoteIsPoorer = remoteScore + 500 < localScore * 0.75 || (localLeads >= 40 && remoteLeads < localLeads * 0.5);
         if (!remoteIsPoorer && remoteScore >= localScore) {
-          // Keep local tombstones so cloud cannot resurrect deleted admins/staff.
-          remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users);
+          // Adopt richer remote ops data, but never resurrect tombstoned users.
+          remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users, readDeletedUsersSidecar());
+          remote.users = mergeUserRosters(this.data.users, remote.users, remote.deleted_users, {
+            allowSecondaryAdds: true,
+          });
+          autoTombstoneAbsentDemoUsers(remote);
           applyUserTombstones(remote);
           this.data = remote;
           sanitizeSchema(this.data);
-          applyUserTombstones(this.data);
+          applyAllUserTombstones(this.data);
           this.ensureIdaoColumnCleanup();
           this.lastSupabaseSyncAt = rows[0].updated_at || new Date().toISOString();
           this.writeJsonFileSafe(DB_PATH, this.data);
+          writeDeletedUsersSidecar(this.data.deleted_users);
           this.writeTimestampedBackup(this.data, { force: true });
           console.log(`Loaded CRM database from Supabase (remote=${remoteScore}, local=${localScore}, leads=${remoteLeads}).`);
         } else {
@@ -1775,8 +1975,14 @@ export class LocalDb {
       } else {
         if (localScore <= 0 || this.isSparseCrmSnapshot(this.data)) {
           if (recovered && schemaRichness(recovered) > localScore) {
+            recovered.deleted_users = mergeDeletedUsers(recovered.deleted_users, this.data.deleted_users, readDeletedUsersSidecar());
+            recovered.users = mergeUserRosters(this.data.users, recovered.users, recovered.deleted_users, {
+              allowSecondaryAdds: !(this.data.users && this.data.users.length > 0),
+            });
+            applyUserTombstones(recovered);
             this.data = recovered;
             this.writeJsonFileSafe(DB_PATH, recovered);
+            writeDeletedUsersSidecar(recovered.deleted_users);
             console.log('Hydrated empty local CRM from backup before first Supabase upload.');
           }
         }
@@ -1808,6 +2014,8 @@ export class LocalDb {
   }
 
   public get(): Schema {
+    // Re-apply sidecar tombstones so any in-memory elevation cannot flash deleted users.
+    applyAllUserTombstones(this.data);
     return this.data;
   }
 
@@ -1825,21 +2033,68 @@ export class LocalDb {
       deleted_by: deletedBy ? String(deletedBy) : undefined,
     };
     if (!entry.id && !entry.email) return;
-    this.data.deleted_users = mergeDeletedUsers(this.data.deleted_users, [entry]);
+    this.data.deleted_users = mergeDeletedUsers(this.data.deleted_users, readDeletedUsersSidecar(), [entry]);
     applyUserTombstones(this.data);
+    // Write sidecar immediately — before full CRM save — so a crash/restart cannot resurrect.
+    writeDeletedUsersSidecar(this.data.deleted_users);
   }
 
   /** Clear tombstones when an admin intentionally re-creates the same person. */
   public clearUserTombstones(match: { id?: string; email?: string }): number {
-    return clearUserTombstonesFromSchema(this.data, match);
+    const removed = clearUserTombstonesFromSchema(this.data, match);
+    if (removed > 0) {
+      // Rewrite sidecar from in-memory list (do not re-merge old sidecar entries).
+      try {
+        if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+        const filePath = deletedUsersSidecarPath();
+        const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
+        fs.writeFileSync(
+          tmpPath,
+          JSON.stringify({
+            deleted_users: mergeDeletedUsers(this.data.deleted_users),
+            updated_at: new Date().toISOString(),
+          }, null, 2),
+          'utf-8',
+        );
+        fs.renameSync(tmpPath, filePath);
+      } catch (err) {
+        console.error('Error rewriting deleted-users sidecar after clear:', err);
+      }
+    }
+    return removed;
   }
 
   public async saveCritical() {
+    applyAllUserTombstones(this.data);
+    writeDeletedUsersSidecar(this.data.deleted_users);
     this.saveData(this.data, { forceBackup: true });
+    // Also scrub tombstoned users out of the richer-kept backup pointer files.
+    this.scrubTombstonedUsersFromBackupFiles();
     try {
       await this.pushToSupabase(this.data, { force: true });
     } catch (err) {
       console.error('Critical save cloud push failed:', err);
+    }
+  }
+
+  /** Best-effort: rewrite backup JSON so deleted accounts cannot return on recovery. */
+  private scrubTombstonedUsersFromBackupFiles() {
+    try {
+      const tombstones = mergeDeletedUsers(this.data.deleted_users, readDeletedUsersSidecar());
+      if (!tombstones.length) return;
+      for (const filePath of listBackupCandidates()) {
+        const schema = tryReadSchemaFile(filePath);
+        if (!schema) continue;
+        const before = schema.users?.length || 0;
+        schema.deleted_users = mergeDeletedUsers(schema.deleted_users, tombstones);
+        applyUserTombstones(schema);
+        const after = schema.users?.length || 0;
+        if (after !== before || (schema.deleted_users?.length || 0) > 0) {
+          this.writeJsonFileSafe(filePath, schema);
+        }
+      }
+    } catch (err) {
+      console.error('Error scrubbing tombstoned users from backups:', err);
     }
   }
 

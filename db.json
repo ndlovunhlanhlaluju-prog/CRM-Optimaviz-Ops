@@ -92,6 +92,96 @@
   ],
   "leads": [
     {
+      "id": "lead-opt-1",
+      "brand_id": "optimaviz",
+      "brand_name": "Optimaviz",
+      "name": "Johnathan Doe",
+      "email": "johndoe@gmail.com",
+      "phone": "+27 82 123 4567",
+      "funnel_stage": "New Lead",
+      "notes": "Interested in core visual analytics dashboard.",
+      "tags": [
+        "High Priority",
+        "Visuals"
+      ],
+      "custom_fields": {
+        "segment": "demo_request_leads",
+        "demo_attended": false,
+        "follow_up_status": "Pending Follow-Up"
+      },
+      "created_at": "2026-08-03T17:26:04.331Z"
+    },
+    {
+      "id": "lead-opt-2",
+      "brand_id": "optimaviz",
+      "brand_name": "Optimaviz",
+      "name": "Sarah Jenkins",
+      "email": "sarah.j@techcorp.io",
+      "phone": "+27 71 987 6543",
+      "funnel_stage": "Contacted",
+      "notes": "Followed up after website enquiry. Requested pricing.",
+      "tags": [
+        "Enterprise"
+      ],
+      "custom_fields": {
+        "segment": "free_trial",
+        "trial_start_date": "2026-08-03"
+      },
+      "created_at": "2026-08-04T05:26:04.331Z"
+    },
+    {
+      "id": "lead-opt-3",
+      "brand_id": "optimaviz",
+      "brand_name": "Optimaviz",
+      "name": "Michael Peterson",
+      "email": "m.peterson@innovate.org",
+      "phone": "+1 415 555 2671",
+      "funnel_stage": "Qualified",
+      "notes": "Qualified. Fit for Optimaviz Enterprise suite.",
+      "tags": [
+        "Hot"
+      ],
+      "custom_fields": {
+        "segment": "subscribed_leads",
+        "subscription_plan": "Enterprise"
+      },
+      "created_at": "2026-08-02T17:26:04.331Z"
+    },
+    {
+      "id": "lead-opt-4",
+      "brand_id": "optimaviz",
+      "brand_name": "Optimaviz",
+      "name": "David Nkosi",
+      "email": "d.nkosi@finance.co.za",
+      "phone": "+27 83 222 1111",
+      "funnel_stage": "Won",
+      "notes": "Contract signed. Initial payment processed.",
+      "tags": [
+        "VIP"
+      ],
+      "custom_fields": {
+        "segment": "demo_request_leads",
+        "demo_attended": false,
+        "follow_up_status": "Pending Follow-Up"
+      },
+      "created_at": "2026-08-01T17:26:04.331Z"
+    },
+    {
+      "id": "lead-clean-1",
+      "brand_id": "optimaclean",
+      "brand_name": "OptimaClean",
+      "name": "Brenda Matthews",
+      "email": "brenda@homeservices.com",
+      "phone": "+27 11 400 3000",
+      "funnel_stage": "Proposal Sent",
+      "notes": "Requesting office sanitizing quote.",
+      "tags": [
+        "Corporate"
+      ],
+      "custom_fields": {},
+      "created_at": "2026-08-04T12:26:04.331Z"
+    },
+    {
       "id": "lead-tg-seed-0",
       "brand_id": "taskgo",
       "brand_name": "TaskGo",
@@ -110,7 +200,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.280Z"
+      "created_at": "2026-08-04T17:26:04.334Z"
     },
     {
       "id": "lead-tg-seed-1",
@@ -131,7 +221,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.281Z"
+      "created_at": "2026-08-04T17:26:04.334Z"
     },
     {
       "id": "lead-tg-seed-2",
@@ -152,7 +242,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.281Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-3",
@@ -173,7 +263,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-4",
@@ -194,7 +284,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-5",
@@ -215,7 +305,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-6",
@@ -236,7 +326,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-7",
@@ -257,7 +347,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-8",
@@ -278,7 +368,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-9",
@@ -299,7 +389,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-10",
@@ -320,7 +410,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-11",
@@ -341,7 +431,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-12",
@@ -362,7 +452,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-13",
@@ -383,7 +473,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-14",
@@ -404,7 +494,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-15",
@@ -425,7 +515,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-16",
@@ -446,7 +536,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-17",
@@ -467,7 +557,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-18",
@@ -488,7 +578,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-19",
@@ -509,7 +599,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-20",
@@ -530,7 +620,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-21",
@@ -551,7 +641,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-22",
@@ -572,7 +662,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-23",
@@ -593,7 +683,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-24",
@@ -614,7 +704,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-25",
@@ -635,7 +725,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-26",
@@ -656,7 +746,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-27",
@@ -677,7 +767,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-28",
@@ -698,7 +788,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-29",
@@ -719,7 +809,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-30",
@@ -740,7 +830,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-31",
@@ -761,7 +851,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-32",
@@ -782,7 +872,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-33",
@@ -803,7 +893,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-34",
@@ -824,7 +914,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-35",
@@ -845,7 +935,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-36",
@@ -866,7 +956,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-37",
@@ -887,7 +977,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-38",
@@ -908,7 +998,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-39",
@@ -929,7 +1019,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-40",
@@ -950,7 +1040,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-41",
@@ -971,7 +1061,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-42",
@@ -992,7 +1082,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-43",
@@ -1013,7 +1103,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-44",
@@ -1034,7 +1124,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-45",
@@ -1055,7 +1145,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-46",
@@ -1076,7 +1166,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-47",
@@ -1097,7 +1187,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-48",
@@ -1118,7 +1208,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-49",
@@ -1139,7 +1229,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-50",
@@ -1160,7 +1250,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-51",
@@ -1181,7 +1271,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-52",
@@ -1202,7 +1292,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-53",
@@ -1223,7 +1313,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-54",
@@ -1244,7 +1334,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-55",
@@ -1265,7 +1355,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-56",
@@ -1286,7 +1376,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-57",
@@ -1307,7 +1397,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-58",
@@ -1328,7 +1418,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-59",
@@ -1349,7 +1439,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-60",
@@ -1370,7 +1460,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-61",
@@ -1391,7 +1481,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-62",
@@ -1412,7 +1502,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-63",
@@ -1433,7 +1523,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-64",
@@ -1454,7 +1544,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-65",
@@ -1475,7 +1565,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-66",
@@ -1496,7 +1586,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-67",
@@ -1517,7 +1607,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-68",
@@ -1538,7 +1628,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-69",
@@ -1559,7 +1649,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-70",
@@ -1580,7 +1670,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-71",
@@ -1601,7 +1691,7 @@
         "provider_status": "APPROVED",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-72",
@@ -1622,7 +1712,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-73",
@@ -1643,7 +1733,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-74",
@@ -1664,7 +1754,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-75",
@@ -1685,7 +1775,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-76",
@@ -1706,7 +1796,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-77",
@@ -1727,7 +1817,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-78",
@@ -1748,7 +1838,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-79",
@@ -1769,7 +1859,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-80",
@@ -1790,7 +1880,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-81",
@@ -1811,7 +1901,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-82",
@@ -1832,7 +1922,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-83",
@@ -1853,7 +1943,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-84",
@@ -1874,7 +1964,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-85",
@@ -1895,7 +1985,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-86",
@@ -1916,7 +2006,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-87",
@@ -1937,7 +2027,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-88",
@@ -1958,7 +2048,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-89",
@@ -1979,7 +2069,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-90",
@@ -2000,7 +2090,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-91",
@@ -2021,7 +2111,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-92",
@@ -2042,7 +2132,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-93",
@@ -2063,7 +2153,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-94",
@@ -2084,7 +2174,7 @@
         "provider_status": "PENDING",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-95",
@@ -2105,7 +2195,7 @@
         "provider_status": "APPROVED",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-tg-seed-96",
@@ -2126,7 +2216,7 @@
         "provider_status": "APPROVED",
         "segment": "all_platform"
       },
-      "created_at": "2026-08-05T13:54:43.282Z"
+      "created_at": "2026-08-04T17:26:04.335Z"
     },
     {
       "id": "lead-idao-seed-0",
@@ -2437,9 +2527,33 @@
       "created_at": "2026-06-01T00:00:00.000Z"
     }
   ],
-  "notes": [],
+  "notes": [
+    {
+      "id": "note-1",
+      "lead_id": "lead-opt-1",
+      "content": "Lead created via manual ingestion.",
+      "created_by": "Nhlanhla Luju",
+      "created_at": "2026-08-03T17:26:04.331Z"
+    },
+    {
+      "id": "note-2",
+      "lead_id": "lead-opt-2",
+      "content": "Talked to Sarah. Outlined core visual intelligence platform modules.",
+      "created_by": "Nhlanhla Luju",
+      "created_at": "2026-08-04T07:26:04.331Z"
+    }
+  ],
   "calls": [],
-  "emails": [],
+  "emails": [
+    {
+      "id": "email-1",
+      "lead_id": "lead-opt-2",
+      "subject": "Introduction to Optimaviz",
+      "html_content": "Hi Sarah,\n\nThanks for reaching out! Here is the slide deck with our pricing tiers.\n\nBest,\nSales Team",
+      "status": "sent",
+      "created_at": "2026-08-04T05:26:04.331Z"
+    }
+  ],
   "whatsapp": [],
   "whatsapp_numbers": {},
   "whatsapp_templates": [],
@@ -2581,5 +2695,19 @@
   "team_notes": [],
   "usage_events": [],
   "deleted_email_provider_ids": [],
+  "deleted_users": [
+    {
+      "id": "email:admin@dirotiq.com",
+      "email": "admin@dirotiq.com",
+      "deleted_at": "2026-08-08T04:26:05.608Z",
+      "deleted_by": "system:auto-tombstone-absent-demo"
+    },
+    {
+      "id": "email:agent@dirotiq.com",
+      "email": "agent@dirotiq.com",
+      "deleted_at": "2026-08-08T04:26:05.606Z",
+      "deleted_by": "system:auto-tombstone-absent-demo"
+    }
+  ],
   "audit_log": []
 }

@@ -5,6 +5,7 @@ import {
   clearUserTombstonesFromSchema,
   isUserTombstoned,
   mergeDeletedUsers,
+  mergeUserRosters,
 } from './server_db';
 
 function baseSchema(overrides: Partial<Schema> = {}): Schema {
@@ -131,5 +132,43 @@ describe('user tombstones', () => {
 
     expect(recovered.users.map(u => u.email).sort()).toEqual(['alive@example.com', 'extra@example.com']);
     expect(recovered.users.some(u => u.email === 'deleted@example.com')).toBe(false);
+  });
+
+  it('does not reintroduce backup-only users when live roster is preferred', () => {
+    const liveUsers = [
+      { id: 'superadmin-1', name: 'Super', email: 'superadmin@optimaviz.com', role: 'admin', created_at: '2026-01-01' } as any,
+      { id: 'admin-2', name: 'Admin', email: 'admin@optimacrm.com', role: 'admin', created_at: '2026-01-01' } as any,
+    ];
+    const backupUsers = [
+      ...liveUsers,
+      { id: 'agent-1', name: 'Agent One', email: 'agent@dirotiq.com', role: 'user', created_at: '2026-01-01' } as any,
+    ];
+
+    const merged = mergeUserRosters(liveUsers, backupUsers, [], { allowSecondaryAdds: false });
+    expect(merged.map(u => u.email).sort()).toEqual([
+      'admin@optimacrm.com',
+      'superadmin@optimaviz.com',
+    ]);
+    expect(merged.some(u => u.email === 'agent@dirotiq.com')).toBe(false);
+  });
+
+  it('strips tombstoned users even when secondary adds are allowed', () => {
+    const liveUsers = [
+      { id: 'superadmin-1', name: 'Super', email: 'superadmin@optimaviz.com', role: 'admin', created_at: '2026-01-01' } as any,
+    ];
+    const remoteUsers = [
+      ...liveUsers,
+      { id: 'agent-1', name: 'Agent One', email: 'agent@dirotiq.com', role: 'user', created_at: '2026-01-01' } as any,
+      { id: 'new-1', name: 'New Staff', email: 'new@example.com', role: 'user', created_at: '2026-01-01' } as any,
+    ];
+    const tombstones = [
+      { id: 'agent-1', email: 'agent@dirotiq.com', deleted_at: '2026-04-01T00:00:00.000Z' },
+    ];
+
+    const merged = mergeUserRosters(liveUsers, remoteUsers, tombstones, { allowSecondaryAdds: true });
+    expect(merged.map(u => u.email).sort()).toEqual([
+      'new@example.com',
+      'superadmin@optimaviz.com',
+    ]);
   });
 });
