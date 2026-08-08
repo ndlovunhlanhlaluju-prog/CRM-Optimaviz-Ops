@@ -8575,6 +8575,8 @@ export default function App() {
       }
       if (!succeeded) throw lastErr || new Error('Could not remove that user.');
 
+      // Optimistically drop the user so a stale list/refetch cannot flash them back.
+      setUsersList(prev => prev.filter(staff => staff.id !== cleanId));
       setConfirmDeleteUserId(null);
       if (selectedUserManagementId === cleanId) setSelectedUserManagementId('');
       await fetchUsersList();

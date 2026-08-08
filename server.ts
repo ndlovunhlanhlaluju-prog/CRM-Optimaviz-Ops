@@ -6586,7 +6586,7 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     res.json(db.get().users.filter(user => !isProtectedOwnerUser(user)).map(publicUser));
   });
 
-  const createManagedUser = (req: express.Request, res: express.Response) => {
+  const createManagedUser = async (req: express.Request, res: express.Response) => {
     const { name, email, password, role } = req.body || {};
     if (!name || !email || !password || !role) { res.status(400).json({ detail: 'Missing required user fields' }); return; }
     const normalizedEmail = sanitizeString(email, 254).toLowerCase();
@@ -6606,6 +6606,18 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     }
     const duplicate = db.get().users.some(u => String(u.email || '').toLowerCase() === normalizedEmail);
     if (duplicate) { res.status(400).json({ detail: 'User email already registered.' }); return; }
+    // Intentional re-add: drop any permanent-delete tombstone for this email.
+    if (typeof db.clearUserTombstones === 'function') {
+      db.clearUserTombstones({ email: normalizedEmail });
+    } else {
+      const data = db.get() as { deleted_users?: Array<{ id?: string; email?: string }> };
+      if (Array.isArray(data.deleted_users)) {
+        data.deleted_users = data.deleted_users.filter(
+          t => String(t?.email || '').toLowerCase().trim() !== normalizedEmail
+            && String(t?.id || '').toLowerCase() !== `email:${normalizedEmail}`,
+        );
+      }
+    }
     const newUser: DbUser = {
       id: newId('user'),
       name: sanitizeString(name, 120),
@@ -6618,7 +6630,12 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     };
     db.get().users.push(newUser);
     auditSecurityEvent(req, 'user_create', { target_user_id: newUser.id, target_email: newUser.email, target_role: newUser.role });
-    db.save();
+    // Persist roster change with backup so re-create survives recovery.
+    if (typeof db.saveCritical === 'function') {
+      await db.saveCritical();
+    } else {
+      await db.save();
+    }
     res.status(201).json(publicUser(newUser));
   };
 
@@ -6723,9 +6740,39 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
       res.status(403).json({ detail: 'Only the superadmin can delete platform admins.', code: 'SUPERADMIN_REQUIRED' });
       return;
     }
-    db.get().users = db.get().users.filter(u => u.id !== user_id);
+    // Tombstone first so richer backups / Supabase cannot resurrect this account.
+    if (typeof db.tombstoneDeletedUser === 'function') {
+      db.tombstoneDeletedUser(
+        { id: user_id, email: target.email },
+        req.user!.id,
+      );
+    } else {
+      const data = db.get() as {
+        deleted_users?: Array<{ id: string; email?: string; deleted_at: string; deleted_by?: string }>;
+      };
+      const entry = {
+        id: user_id,
+        email: String(target.email || '').toLowerCase().trim() || undefined,
+        deleted_at: new Date().toISOString(),
+        deleted_by: req.user!.id,
+      };
+      data.deleted_users = Array.isArray(data.deleted_users) ? data.deleted_users : [];
+      data.deleted_users = [
+        entry,
+        ...data.deleted_users.filter(
+          t => t?.id !== user_id && String(t?.email || '').toLowerCase() !== entry.email,
+        ),
+      ].slice(0, 500);
+    }
+    db.get().users = db.get().users.filter(u => u.id !== user_id
+      && String(u.email || '').toLowerCase().trim() !== String(target.email || '').toLowerCase().trim());
     auditSecurityEvent(req, 'user_delete', { target_user_id: user_id, target_email: target.email, target_role: target.role });
-    await db.save();
+    // Force backup + cloud push so the deletion survives restart/recovery.
+    if (typeof db.saveCritical === 'function') {
+      await db.saveCritical();
+    } else {
+      await db.save();
+    }
     res.json({ success: true, deleted_user_id: user_id });
   };
 
