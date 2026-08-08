@@ -137,38 +137,40 @@ describe('user tombstones', () => {
   it('does not reintroduce backup-only users when live roster is preferred', () => {
     const liveUsers = [
       { id: 'superadmin-1', name: 'Super', email: 'superadmin@optimaviz.com', role: 'admin', created_at: '2026-01-01' } as any,
-      { id: 'admin-2', name: 'Admin', email: 'admin@optimacrm.com', role: 'admin', created_at: '2026-01-01' } as any,
+      { id: 'staff-1', name: 'Staff', email: 'staff@example.com', role: 'user', created_at: '2026-01-01' } as any,
     ];
     const backupUsers = [
       ...liveUsers,
-      { id: 'agent-1', name: 'Agent One', email: 'agent@dirotiq.com', role: 'user', created_at: '2026-01-01' } as any,
+      { id: 'gone-1', name: 'Gone', email: 'gone@example.com', role: 'user', created_at: '2026-01-01' } as any,
     ];
 
     const merged = mergeUserRosters(liveUsers, backupUsers, [], { allowSecondaryAdds: false });
     expect(merged.map(u => u.email).sort()).toEqual([
-      'admin@optimacrm.com',
+      'staff@example.com',
       'superadmin@optimaviz.com',
     ]);
-    expect(merged.some(u => u.email === 'agent@dirotiq.com')).toBe(false);
+    expect(merged.some(u => u.email === 'gone@example.com')).toBe(false);
   });
 
-  it('strips tombstoned users even when secondary adds are allowed', () => {
-    const liveUsers = [
+  it('strips tombstoned users even when secondary adds are allowed (cloud-first)', () => {
+    const cloudUsers = [
       { id: 'superadmin-1', name: 'Super', email: 'superadmin@optimaviz.com', role: 'admin', created_at: '2026-01-01' } as any,
-    ];
-    const remoteUsers = [
-      ...liveUsers,
-      { id: 'agent-1', name: 'Agent One', email: 'agent@dirotiq.com', role: 'user', created_at: '2026-01-01' } as any,
       { id: 'new-1', name: 'New Staff', email: 'new@example.com', role: 'user', created_at: '2026-01-01' } as any,
     ];
+    const bundledLocalUsers = [
+      ...cloudUsers,
+      { id: 'legacy-admin', name: 'Legacy', email: 'admin@optimacrm.com', role: 'admin', created_at: '2026-01-01' } as any,
+    ];
     const tombstones = [
-      { id: 'agent-1', email: 'agent@dirotiq.com', deleted_at: '2026-04-01T00:00:00.000Z' },
+      { id: 'legacy-admin', email: 'admin@optimacrm.com', deleted_at: '2026-04-01T00:00:00.000Z' },
     ];
 
-    const merged = mergeUserRosters(liveUsers, remoteUsers, tombstones, { allowSecondaryAdds: true });
+    // Cloud-first: preferred = cloud, secondary = bundled local
+    const merged = mergeUserRosters(cloudUsers, bundledLocalUsers, tombstones, { allowSecondaryAdds: true });
     expect(merged.map(u => u.email).sort()).toEqual([
       'new@example.com',
       'superadmin@optimaviz.com',
     ]);
+    expect(merged.some(u => u.email === 'admin@optimacrm.com')).toBe(false);
   });
 });

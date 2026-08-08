@@ -2714,17 +2714,14 @@ export async function createApp() {
       return true;
     }
 
-    // Broken / seed-placeholder passwords on built-in accounts → accept recovery defaults
+    // Broken / seed-placeholder passwords on the platform superadmin only.
+    // Other staff/admins are user-managed — no hardcoded recovery passwords.
     const broken = !stored || stored.startsWith('set-') || !stored.startsWith(PASSWORD_HASH_PREFIX);
     const defaultEmails = new Set([
-
       DEFAULT_SUPERADMIN_EMAIL,
-      'admin@optimacrm.com',
-      'admin@dirotiq.com',
-      'agent@dirotiq.com',
       ...protectedOwnerEmails,
     ]);
-    const defaultPasswords = [DEFAULT_SUPERADMIN_PASSWORD, 'password123', 'admin123', 'password'];
+    const defaultPasswords = [DEFAULT_SUPERADMIN_PASSWORD].filter(Boolean);
     if (broken && defaultEmails.has(email) && defaultPasswords.includes(attempt)) {
       user.password = hashPassword(attempt);
       db.save();
@@ -6630,11 +6627,22 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     };
     db.get().users.push(newUser);
     auditSecurityEvent(req, 'user_create', { target_user_id: newUser.id, target_email: newUser.email, target_role: newUser.role });
-    // Persist roster change with backup so re-create survives recovery.
-    if (typeof db.saveCritical === 'function') {
-      await db.saveCritical();
-    } else {
-      await db.save();
+    // Persist roster change + cloud push so re-create survives Vercel cold starts.
+    try {
+      if (typeof db.saveCritical === 'function') {
+        await db.saveCritical();
+      } else {
+        await db.save();
+      }
+    } catch (err: any) {
+      // Roll back in-memory create if durable persist failed.
+      db.get().users = db.get().users.filter(u => u.id !== newUser.id);
+      console.error('User create persistence failed:', err);
+      res.status(503).json({
+        detail: err?.message || 'User could not be persisted to cloud storage. Try again.',
+        code: 'CREATE_PERSIST_FAILED',
+      });
+      return;
     }
     res.status(201).json(publicUser(newUser));
   };
@@ -6767,11 +6775,21 @@ if (sendStatus === 'failed') { res.status(400).json(newEmail); return; }
     db.get().users = db.get().users.filter(u => u.id !== user_id
       && String(u.email || '').toLowerCase().trim() !== String(target.email || '').toLowerCase().trim());
     auditSecurityEvent(req, 'user_delete', { target_user_id: user_id, target_email: target.email, target_role: target.role });
-    // Force backup + cloud push so the deletion survives restart/recovery.
-    if (typeof db.saveCritical === 'function') {
-      await db.saveCritical();
-    } else {
-      await db.save();
+    // Force backup + cloud push so the deletion survives Vercel cold starts / recovery.
+    try {
+      if (typeof db.saveCritical === 'function') {
+        await db.saveCritical();
+      } else {
+        await db.save();
+      }
+    } catch (err: any) {
+      console.error('User delete persistence failed:', err);
+      res.status(503).json({
+        detail: err?.message || 'User was removed in memory but could not be persisted to cloud storage. Try again.',
+        code: 'DELETE_PERSIST_FAILED',
+        deleted_user_id: user_id,
+      });
+      return;
     }
     res.json({ success: true, deleted_user_id: user_id });
   };

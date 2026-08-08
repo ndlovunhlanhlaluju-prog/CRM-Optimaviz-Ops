@@ -742,30 +742,36 @@ function writeDeletedUsersSidecar(list: Schema['deleted_users'] | undefined | nu
 }
 
 /**
- * Built-in demo/bootstrap accounts that ship in seed + old backups.
- * If they are absent from the live roster, treat that as intentional removal
- * so leads-richer snapshots cannot resurrect them.
+ * Legacy seed/demo accounts that used to be hardcoded in getSeededData / old backups.
+ * Only superadmin@optimaviz.com remains a permanent platform account.
+ * If these emails are not on the live roster, tombstone them so cloud/backup
+ * snapshots cannot resurrect them after an intentional delete.
  */
-const DEMO_BOOTSTRAP_USER_EMAILS = new Set([
+const LEGACY_SEED_USER_EMAILS = new Set([
+  'admin@optimacrm.com',
   'agent@dirotiq.com',
   'admin@dirotiq.com',
 ]);
 
-/** When live already has a roster, tombstone seed accounts that are no longer present. */
-function autoTombstoneAbsentDemoUsers(data: Schema): Schema {
+const DEFAULT_SUPERADMIN_EMAIL = 'superadmin@optimaviz.com';
+
+/** When live already has a roster, tombstone legacy seed accounts that are no longer present. */
+function autoTombstoneAbsentLegacySeedUsers(data: Schema): Schema {
   if (!Array.isArray(data.users) || data.users.length === 0) return data;
   const liveEmails = new Set(
     data.users.map(u => normalizeUserEmail(u.email)).filter(Boolean),
   );
+  // Never auto-tombstone the platform superadmin.
+  liveEmails.add(DEFAULT_SUPERADMIN_EMAIL);
   const extras: NonNullable<Schema['deleted_users']> = [];
-  for (const email of DEMO_BOOTSTRAP_USER_EMAILS) {
+  for (const email of LEGACY_SEED_USER_EMAILS) {
     if (liveEmails.has(email)) continue;
     if (isUserTombstoned(data, { email })) continue;
     extras.push({
       id: `email:${email}`,
       email,
       deleted_at: new Date().toISOString(),
-      deleted_by: 'system:auto-tombstone-absent-demo',
+      deleted_by: 'system:auto-tombstone-legacy-seed',
     });
   }
   if (extras.length) {
@@ -777,9 +783,18 @@ function autoTombstoneAbsentDemoUsers(data: Schema): Schema {
 /** Attach sidecar + embedded tombstones, then strip resurrected users. */
 function applyAllUserTombstones(data: Schema): Schema {
   data.deleted_users = mergeDeletedUsers(data.deleted_users, readDeletedUsersSidecar());
-  autoTombstoneAbsentDemoUsers(data);
+  autoTombstoneAbsentLegacySeedUsers(data);
   applyUserTombstones(data);
   return data;
+}
+
+function isServerlessHost(): boolean {
+  return Boolean(
+    process.env.VERCEL
+    || process.env.AWS_LAMBDA_FUNCTION_NAME
+    || process.env.FUNCTION_NAME
+    || process.env.K_SERVICE,
+  );
 }
 
 /**
@@ -1302,16 +1317,13 @@ export class LocalDb {
     this.data.users.forEach(u => {
       const email = String(u.email || '').toLowerCase().trim();
       const platformRole = String(u.platform_role || '');
-      const isBuiltin = [
-        'superadmin@optimaviz.com',
-        'admin@optimacrm.com',
-        'admin@dirotiq.com',
-        'agent@dirotiq.com',
-      ].includes(email) || platformRole === 'superadmin' || platformRole === 'owner';
-      if (isBuiltin && (!u.password || String(u.password).startsWith('set-'))) {
-        u.password = process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD
-          || process.env.ADMIN_BOOTSTRAP_PASSWORD
-          || (email === 'superadmin@optimaviz.com' || platformRole === 'superadmin' ? 'admin1234!' : 'password123');
+      // Only the platform superadmin is a permanent built-in account.
+      const isBuiltinSuperadmin =
+        email === DEFAULT_SUPERADMIN_EMAIL
+        || platformRole === 'superadmin'
+        || platformRole === 'owner';
+      if (isBuiltinSuperadmin && (!u.password || String(u.password).startsWith('set-'))) {
+        u.password = process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || 'admin1234!';
         userModified = true;
       }
     });
@@ -1387,32 +1399,15 @@ export class LocalDb {
   }
 
   private getSeededData(): Schema {
+    // Only the platform superadmin is hardcoded. All other staff/admins are
+    // created via User Management and must remain permanently deletable.
     const adminUser: DbUser = {
       id: 'superadmin-1',
       name: 'Optimaviz Superadmin',
-      email: 'superadmin@optimaviz.com',
+      email: DEFAULT_SUPERADMIN_EMAIL,
       password: process.env.PLATFORM_OWNER_BOOTSTRAP_PASSWORD || 'admin1234!',
       role: 'admin',
       platform_role: 'superadmin',
-      created_at: new Date().toISOString()
-    };
-
-    const adminUser2: DbUser = {
-      id: 'admin-2',
-      name: 'Platform Admin',
-      email: 'admin@optimacrm.com',
-      password: process.env.ADMIN_BOOTSTRAP_PASSWORD || 'password123',
-      role: 'admin',
-      platform_role: 'none',
-      created_at: new Date().toISOString()
-    };
-
-    const agentUser: DbUser = {
-      id: 'agent-1',
-      name: 'Agent One',
-      email: 'agent@dirotiq.com',
-      password: process.env.AGENT_BOOTSTRAP_PASSWORD || 'password123',
-      role: 'user',
       created_at: new Date().toISOString()
     };
 
@@ -1584,7 +1579,7 @@ export class LocalDb {
     ];
 
     const data: Schema = {
-      users: [adminUser, adminUser2, agentUser],
+      users: [adminUser],
       brand_funnels: INITIAL_FUNNELS,
       leads: initialLeads,
       notes: initialHistory,
@@ -1936,26 +1931,37 @@ export class LocalDb {
       if (rows.length > 0 && rows[0].data) {
         const remote = safeSchema(rows[0].data);
         sanitizeSchema(remote);
-        remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users, tombstoneUnion, readDeletedUsersSidecar());
-        // Prefer live roster; only admit non-tombstoned remote users that aren't
-        // already-deleted demo accounts. Secondary adds still honor tombstones.
-        remote.users = mergeUserRosters(this.data.users, remote.users, remote.deleted_users, {
-          allowSecondaryAdds: true,
-        });
-        autoTombstoneAbsentDemoUsers(remote);
+        // On Vercel/serverless the filesystem is ephemeral — Supabase is the source of truth
+        // for the user roster so a bundled db.json cannot reintroduce deleted staff.
+        const cloudAuthoritative = this.supabaseConfigured() || isServerlessHost();
+        const remoteTombstoneCount = Array.isArray(remote.deleted_users) ? remote.deleted_users.length : 0;
+        const remoteUserCount = Array.isArray(remote.users) ? remote.users.length : 0;
+        const tombstones = mergeDeletedUsers(
+          remote.deleted_users,
+          this.data.deleted_users,
+          tombstoneUnion,
+          readDeletedUsersSidecar(),
+        );
+        remote.deleted_users = tombstones;
+
+        // Cloud-first roster when hosted; never prefer bundled local seed users over Supabase.
+        const cloudRoster = mergeUserRosters(
+          cloudAuthoritative ? remote.users : this.data.users,
+          cloudAuthoritative ? this.data.users : remote.users,
+          tombstones,
+          { allowSecondaryAdds: true },
+        );
+        remote.users = cloudRoster;
+        autoTombstoneAbsentLegacySeedUsers(remote);
         applyUserTombstones(remote);
+
         const remoteScore = schemaRichness(remote);
         const remoteLeads = remote.leads?.length || 0;
         const localLeads = this.data.leads?.length || 0;
         const remoteIsPoorer = remoteScore + 500 < localScore * 0.75 || (localLeads >= 40 && remoteLeads < localLeads * 0.5);
+
         if (!remoteIsPoorer && remoteScore >= localScore) {
-          // Adopt richer remote ops data, but never resurrect tombstoned users.
-          remote.deleted_users = mergeDeletedUsers(remote.deleted_users, this.data.deleted_users, readDeletedUsersSidecar());
-          remote.users = mergeUserRosters(this.data.users, remote.users, remote.deleted_users, {
-            allowSecondaryAdds: true,
-          });
-          autoTombstoneAbsentDemoUsers(remote);
-          applyUserTombstones(remote);
+          // Adopt remote ops data; roster already cloud-first + tombstoned above.
           this.data = remote;
           sanitizeSchema(this.data);
           applyAllUserTombstones(this.data);
@@ -1966,10 +1972,28 @@ export class LocalDb {
           this.writeTimestampedBackup(this.data, { force: true });
           console.log(`Loaded CRM database from Supabase (remote=${remoteScore}, local=${localScore}, leads=${remoteLeads}).`);
         } else {
+          // Keep richer local ops data, but still take the cloud-authoritative user roster
+          // (and tombstones) so deleted accounts stay deleted on Vercel.
+          this.data.deleted_users = mergeDeletedUsers(this.data.deleted_users, tombstones);
+          this.data.users = cloudRoster;
+          autoTombstoneAbsentLegacySeedUsers(this.data);
+          applyUserTombstones(this.data);
           this.lastSupabaseSyncAt = rows[0].updated_at || new Date().toISOString();
           console.warn(
-            `Kept local CRM (score ${localScore}, leads=${localLeads}) instead of poorer Supabase snapshot (score ${remoteScore}, leads=${remoteLeads}). Pushing local recovery to cloud.`,
+            `Kept local CRM ops (score ${localScore}, leads=${localLeads}) instead of poorer Supabase snapshot (score ${remoteScore}, leads=${remoteLeads}), but applied cloud user roster + tombstones.`,
           );
+        }
+
+        // Vercel has no durable disk: any tombstones applied at boot must be written back
+        // to Supabase or the next cold start will resurrect deleted users from cloud.
+        const tombstonesGrew = (this.data.deleted_users?.length || 0) > remoteTombstoneCount;
+        const usersStripped = (this.data.users?.length || 0) < remoteUserCount;
+        if ((tombstonesGrew || usersStripped) && !this.isSparseCrmSnapshot(this.data)) {
+          console.log(
+            `[CRM DB] Pushing tombstone/roster corrections to Supabase (tombstonesGrew=${tombstonesGrew}, usersStripped=${usersStripped}).`,
+          );
+          await this.pushToSupabase(this.data, { force: true });
+        } else if (remoteIsPoorer || remoteScore < localScore) {
           await this.pushToSupabase(this.data, { force: !this.isSparseCrmSnapshot(this.data) });
         }
       } else {
@@ -2064,16 +2088,38 @@ export class LocalDb {
     return removed;
   }
 
-  public async saveCritical() {
+  /**
+   * Persist security-critical changes (user delete/create).
+   * On Vercel, Supabase is the only durable store — fail loudly if cloud push fails
+   * so the API does not report success while the next cold start resurrects users.
+   */
+  public async saveCritical(): Promise<{ cloud_pushed: boolean; cloud_error?: string }> {
     applyAllUserTombstones(this.data);
     writeDeletedUsersSidecar(this.data.deleted_users);
     this.saveData(this.data, { forceBackup: true });
     // Also scrub tombstoned users out of the richer-kept backup pointer files.
     this.scrubTombstonedUsersFromBackupFiles();
+
+    if (!this.supabaseConfigured()) {
+      if (isServerlessHost()) {
+        const msg = 'Supabase is not configured; user deletions cannot persist on Vercel/serverless.';
+        console.error(msg);
+        throw new Error(msg);
+      }
+      return { cloud_pushed: false };
+    }
+
     try {
       await this.pushToSupabase(this.data, { force: true });
+      return { cloud_pushed: true };
     } catch (err) {
-      console.error('Critical save cloud push failed:', err);
+      const cloud_error = err instanceof Error ? err.message : String(err);
+      console.error('Critical save cloud push failed:', cloud_error);
+      // Serverless has no durable disk — treat cloud failure as hard failure.
+      if (isServerlessHost()) {
+        throw new Error(`Failed to persist user change to Supabase: ${cloud_error}`);
+      }
+      return { cloud_pushed: false, cloud_error };
     }
   }
 
